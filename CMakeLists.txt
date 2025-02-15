@@ -32,6 +32,7 @@ target_link_libraries(${PROJECT_NAME}
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PUBLIC
+        src
         external/SFML/include
         external/imgui
         external/imguiSfml
