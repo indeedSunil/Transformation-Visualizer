@@ -5,11 +5,13 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 #include "UI/UI.hpp"
+#include <SFML/Graphics/Font.hpp>
 
 class Core {
 public:
     Core();
     void run();
+     static sf::Font font;
 
 private:
     sf::RenderWindow window;
