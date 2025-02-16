@@ -13,16 +13,17 @@ sf::ConvexShape Math::triangle;
 sf::RectangleShape Math::line;
 // sf::EllipseShape Math::ellipse;
 sf::Text Math::letterA(Core::font);
+bool Math::hasShape = false;
 
-void Math::setCurrentShape(ShapeType shape)
+void Math::setCurrentShape(const ShapeType shape)
 {
     currentShape = shape;
     isDrawing = false; // Reset drawing state when shape changes
 }
 
-void Math::handleMouseEvent(const sf::Event& event, const sf::RenderWindow& window)
+void Math::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window)
 {
-    if (event.getIf<sf::Event::MouseButtonPressed>() && isButtonPressed(sf::Mouse::Button::Left))
+    if (event.getIf<sf::Event::MouseButtonPressed>() && isButtonPressed(sf::Mouse::Button::Left) && !hasShape)
     {
         // Convert window coordinates to graph coordinates
         startPos = UI::windowToGraph(sf::Vector2f(static_cast<float>(sf::Mouse::getPosition().x),
@@ -37,7 +38,7 @@ void Math::handleMouseEvent(const sf::Event& event, const sf::RenderWindow& wind
             rectangle.setPosition(UI::graphToWindow(startPos));
             rectangle.setSize(sf::Vector2f(0, 0));
             rectangle.setFillColor(sf::Color::Transparent);
-            rectangle.setOutlineColor(sf::Color::Red);
+            rectangle.setOutlineColor(sf::Color::White);
             rectangle.setOutlineThickness(2);
             break;
         default:
@@ -45,17 +46,27 @@ void Math::handleMouseEvent(const sf::Event& event, const sf::RenderWindow& wind
         // Add other shape initializations here
         }
     }
-    else if (isDrawing)
+    else if (event.getIf<sf::Event::MouseMoved>() && isDrawing)
     {
-        if (const auto* mouseMoved = event.getIf<sf::Event::MouseMoved>())
-        {
-            currentPos = UI::windowToGraph(sf::Vector2f(static_cast<float>(mouseMoved->position.x), static_cast<float>(mouseMoved->position.y)));
-            updateShape();
-        }
+        const auto* mouseMoved = event.getIf<sf::Event::MouseMoved>();
+        currentPos = UI::windowToGraph(sf::Vector2f(static_cast<float>(mouseMoved->position.x),
+                                                    static_cast<float>(mouseMoved->position.y)));
+        updateShape();
     }
-    else if (event.getIf<sf::Event::MouseButtonReleased>() && isButtonPressed(sf::Mouse::Button::Left))
+    else if (event.getIf<sf::Event::MouseButtonReleased>())
     {
+        switch (currentShape)
+        {
+        case ShapeType::Rectangle:
+            {
+                rectangle.setFillColor(sf::Color(255, 255, 255, 0));
+                break;
+            }
+        default:
+            break;
+        }
         isDrawing = false;
+        hasShape = true;
     }
 }
 
@@ -70,7 +81,6 @@ void Math::updateShape()
             if (size.x < 0) rectangle.setPosition(UI::graphToWindow(sf::Vector2f(currentPos.x, startPos.y)));
             if (size.y < 0) rectangle.setPosition(UI::graphToWindow(sf::Vector2f(startPos.x, currentPos.y)));
             break;
-
         }
     default:
         break;
@@ -80,15 +90,18 @@ void Math::updateShape()
 
 void Math::render(sf::RenderWindow& window)
 {
-    if (!isDrawing) return;
+    if (hasShape) {
+        window.draw(rectangle);
+    }
+    // if (!isDrawing) return;
 
     switch (currentShape)
     {
     case ShapeType::Rectangle:
         window.draw(rectangle);
         break;
-        default:
-            break;
+    default:
+        break;
     // Add other shape rendering here
     }
 }

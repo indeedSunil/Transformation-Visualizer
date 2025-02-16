@@ -13,11 +13,18 @@ public:
         LetterA
     };
 
-    static void handleMouseEvent(const sf::Event& event, const sf::RenderWindow& window);
+    static void handleMouseEvent(const sf::Event& event, sf::RenderWindow& window);
     static void render(sf::RenderWindow& window);
     static void setCurrentShape(ShapeType shape);
     static bool isDrawingEnabled() { return isDrawing; }
     static void setDrawingEnabled(bool enabled) { isDrawing = enabled; }
+    static bool drawnOnce;
+    static bool hasShape;  // true if a shape is currently stored
+    static void clearShape()
+    {
+        hasShape = false;
+        rectangle = sf::RectangleShape();
+    }
 
 private:
     static ShapeType currentShape;

@@ -3,12 +3,12 @@
 #include <iostream>
 #include <ostream>
 
-sf::Vector2u UI::windowSize;
+sf::Vector2u UI::windowSize; // Calculate the size of the window
 std::vector<sf::Texture> UI::textures; // Define the static textures vector
 float UI::dividerLinePositionX; // Divider line between options and graph
-
 // Load all textures
-void UI::textureInit() {
+void UI::textureInit()
+{
     const std::vector<std::string> textureFiles = {
         "assets/images/rectangle.png",
         "assets/images/triangle.png",
@@ -20,32 +20,40 @@ void UI::textureInit() {
 
     textures.resize(textureFiles.size()); // Resize the vector to hold all textures
 
-    for (size_t i = 0; i < textureFiles.size(); i++) {
-        if (!textures[i].loadFromFile(textureFiles[i])) {
+    for (size_t i = 0; i < textureFiles.size(); i++)
+    {
+        if (!textures[i].loadFromFile(textureFiles[i]))
+        {
             std::cout << "Error loading texture: " << textureFiles[i] << std::endl;
         }
     }
 }
 
-bool UI::initialize(sf::RenderWindow& window) {
+bool UI::initialize(sf::RenderWindow& window)
+{
     windowSize = window.getSize();
     std::cout << windowSize.x << std::endl;
     textureInit(); // Load all textures during initialization
     return ImGui::SFML::Init(window);
 }
 
-void UI::render(sf::RenderWindow& window) {
+void UI::render(sf::RenderWindow& window)
+{
     // Buttons to add shape or clear canvas
     ImGui::SetNextWindowPos(ImVec2(30, 100), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(200, 100));
 
-    ImGui::Begin("Options ", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Options ", nullptr,
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
     ImGui::SetWindowFontScale(1.5f);
-    if (ImGui::Button("Add Shape")) {
+    if (ImGui::Button("Add Shape"))
+    {
         std::cout << "Add" << std::endl;
     }
-    if (ImGui::Button("Clear Canvas")) {
-        std::cout << "Option 2 Clicked!" << std::endl;
+    if (ImGui::Button("Clear Canvas"))
+    {
+        Math::clearShape();
+        std::cout << "Clear Canvas clicked!" << std::endl;
     }
     ImGui::End();
 
@@ -53,21 +61,27 @@ void UI::render(sf::RenderWindow& window) {
     ImGui::SetNextWindowPos(ImVec2(30, 250), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(200, 250));
 
-    ImGui::Begin("Transformations", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Transformations", nullptr,
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
     ImGui::SetWindowFontScale(1.5f);
-    if (ImGui::Button("Scale")) {
+    if (ImGui::Button("Scale"))
+    {
         std::cout << "Add" << std::endl;
     }
-    if (ImGui::Button("Translate")) {
+    if (ImGui::Button("Translate"))
+    {
         std::cout << "Option 2 Clicked!" << std::endl;
     }
-    if (ImGui::Button("Rotate")) {
+    if (ImGui::Button("Rotate"))
+    {
         std::cout << "Add" << std::endl;
     }
-    if (ImGui::Button("Reflect")) {
+    if (ImGui::Button("Reflect"))
+    {
         std::cout << "Option 2 Clicked!" << std::endl;
     }
-    if (ImGui::Button("Shear")) {
+    if (ImGui::Button("Shear"))
+    {
         std::cout << "Add" << std::endl;
     }
     ImGui::End();
@@ -76,17 +90,20 @@ void UI::render(sf::RenderWindow& window) {
     ImGui::SetNextWindowPos(ImVec2(30, 550), ImGuiCond_Always); // Positioned below "Transformations"
     ImGui::SetNextWindowSize(ImVec2(430, 250)); // Increased height to fit 2 rows
 
-    ImGui::Begin("Grid Window", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::Begin("Grid Window", nullptr,
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
     ImGui::SetWindowFontScale(1.5f);
 
     // Create a 2x3 grid (2 rows, 3 columns)
     constexpr int numRows = 2; // Number of rows
     const int numCols = 3; // Number of columns
-    const float cellWidth = 120.0f; // Fixed width for each cell
-    const float cellHeight = 100.0f; // Fixed height for each cell
+    constexpr float cellWidth = 120.0f; // Fixed width for each cell
+    constexpr float cellHeight = 100.0f; // Fixed height for each cell
 
-    for (int row = 0; row < numRows; row++) {
-        for (int col = 0; col < numCols; col++) {
+    for (int row = 0; row < numRows; row++)
+    {
+        for (int col = 0; col < numCols; col++)
+        {
             if (col > 0) ImGui::SameLine(); // Place cells in the same row
 
             // Get the texture for the current cell
@@ -95,11 +112,16 @@ void UI::render(sf::RenderWindow& window) {
 
             // Display the texture in the cell
             if (ImGui::ImageButton(std::to_string(textureIndex).c_str(), textureID,
-                 ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1))) {
-                switch (textureIndex) {
+                                   ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1)))
+            {
+                switch (textureIndex)
+                {
                 case 0:
-                    Math::setCurrentShape(Math::ShapeType::Rectangle);
-                    break;
+                    {
+                        Math::hasShape = false;
+                        Math::setCurrentShape(Math::ShapeType::Rectangle);
+                        break;
+                    }
                 case 1:
                     Math::setCurrentShape(Math::ShapeType::Triangle);
                     break;
@@ -115,13 +137,14 @@ void UI::render(sf::RenderWindow& window) {
                 case 5:
                     Math::setCurrentShape(Math::ShapeType::LetterA);
                     break;
-                    default:
-                        break;
+                default:
+                    break;
                 }
-                 }
+            }
 
             // Add hover effect
-            if (ImGui::IsItemHovered()) {
+            if (ImGui::IsItemHovered())
+            {
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 0, 1)); // Yellow border on hover
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f); // Increase border thickness
                 ImGui::PopStyleVar(); // Reset border thickness
@@ -160,30 +183,33 @@ void UI::render(sf::RenderWindow& window) {
     Math::render(window);
 }
 
-void UI::drawCartesianGraph(sf::RenderWindow& window) {
+void UI::drawCartesianGraph(sf::RenderWindow& window)
+{
     // Calculate the graph area (right side of the divider)
-    const float graphWidth = windowSize.x - dividerLinePositionX;
-    const float graphHeight = windowSize.y;
+    const float graphWidth = static_cast<float>(windowSize.x) - dividerLinePositionX;
+    const auto graphHeight = static_cast<float>(windowSize.y);
 
     // Calculate the origin (center of the graph)
-    sf::Vector2f origin(dividerLinePositionX + graphWidth/2, graphHeight/2);
+    sf::Vector2f origin(dividerLinePositionX + graphWidth / 2, graphHeight / 2);
 
     // Draw grid lines
-    const int numLinesX = graphWidth / GRID_SIZE;
-    const int numLinesY = graphHeight / GRID_SIZE;
+    const int numLinesX = static_cast<int>(graphWidth) / GRID_SIZE;
+    const int numLinesY = static_cast<int>(graphHeight) / GRID_SIZE;
 
     // Vertical grid lines
-    for(int i = -numLinesX/2; i <= numLinesX/2; i++) {
+    for (int i = -numLinesX / 2; i <= numLinesX / 2; i++)
+    {
         sf::RectangleShape line(sf::Vector2f(GRID_LINE_THICKNESS, graphHeight));
-        line.setPosition({origin.x + i * GRID_SIZE, 0});
+        line.setPosition({origin.x + static_cast<float>(i * GRID_SIZE), 0});
         line.setFillColor(sf::Color(50, 50, 50));
         window.draw(line);
     }
 
     // Horizontal grid lines
-    for(int i = -numLinesY/2; i <= numLinesY/2; i++) {
+    for (int i = -numLinesY / 2; i <= numLinesY / 2; i++)
+    {
         sf::RectangleShape line(sf::Vector2f(graphWidth, GRID_LINE_THICKNESS));
-        line.setPosition({dividerLinePositionX, origin.y + i * GRID_SIZE});
+        line.setPosition({dividerLinePositionX, (origin.y + static_cast<float>(i) * GRID_SIZE)});
         line.setFillColor(sf::Color(50, 50, 50));
         window.draw(line);
     }
@@ -192,65 +218,40 @@ void UI::drawCartesianGraph(sf::RenderWindow& window) {
     // X-axis
     sf::RectangleShape xAxis(sf::Vector2f(graphWidth, AXIS_THICKNESS));
     xAxis.setPosition({dividerLinePositionX, origin.y});
-    xAxis.setFillColor(sf::Color::White);
+    xAxis.setFillColor(sf::Color(255,255,255, 30));
     window.draw(xAxis);
 
     // Y-axis
     sf::RectangleShape yAxis(sf::Vector2f(AXIS_THICKNESS, graphHeight));
     yAxis.setPosition({origin.x, 0});
-    yAxis.setFillColor(sf::Color::White);
+    yAxis.setFillColor(sf::Color(255,255,255, 30));
     window.draw(yAxis);
-
-    // Draw axis labels and numbers
-    for(int i = -10; i <= 10; i++) {
-        if(i == 0) continue; // Skip 0 as it's the origin
-
-        // X-axis numbers
-        sf::Text xLabel(Core::font);
-        xLabel.setString("X");
-        xLabel.setFont(Core::font);
-        xLabel.setString(std::to_string(i));
-        xLabel.setCharacterSize(12);
-        xLabel.setFillColor(sf::Color::White);
-        xLabel.setPosition(
-            {origin.x + i * GRID_SIZE - 5,
-            origin.y + 5}
-        );
-        window.draw(xLabel);
-
-        // Y-axis numbers
-        sf::Text yLabel(Core::font);
-        yLabel.setString("Y");
-        yLabel.setFont(Core::font);
-        yLabel.setString(std::to_string(-i)); // Negative because Y is inverted in SFML
-        yLabel.setCharacterSize(12);
-        yLabel.setFillColor(sf::Color::White);
-        yLabel.setPosition({origin.x + 5, origin.y + i * GRID_SIZE - 10});
-        window.draw(yLabel);
-    }
 }
 
 // Utility functions for coordinate conversion
-sf::Vector2f UI::windowToGraph(const sf::Vector2f windowCoord) {
+sf::Vector2f UI::windowToGraph(const sf::Vector2f windowCoord)
+{
     const float dividerX = 0.25f * windowSize.x;
-    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX)/2, windowSize.y/2);
+    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX) / 2, windowSize.y / 2);
 
     return sf::Vector2f(
         (windowCoord.x - origin.x) / GRID_SIZE,
-        (origin.y - windowCoord.y) / GRID_SIZE  // Inverted Y because SFML Y grows downward
+        (origin.y - windowCoord.y) / GRID_SIZE // Inverted Y because SFML Y grows downward
     );
 }
 
-sf::Vector2f UI::graphToWindow(sf::Vector2f graphCoord) {
+sf::Vector2f UI::graphToWindow(sf::Vector2f graphCoord)
+{
     const float dividerX = 0.25f * windowSize.x;
-    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX)/2, windowSize.y/2);
+    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX) / 2, windowSize.y / 2);
 
     return sf::Vector2f(
         origin.x + graphCoord.x * GRID_SIZE,
-        origin.y - graphCoord.y * GRID_SIZE  // Inverted Y because SFML Y grows downward
+        origin.y - graphCoord.y * GRID_SIZE // Inverted Y because SFML Y grows downward
     );
 }
 
-void UI::shutdown() {
+void UI::shutdown()
+{
     ImGui::SFML::Shutdown();
 }
