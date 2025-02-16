@@ -6,6 +6,9 @@
 sf::Vector2u UI::windowSize; // Calculate the size of the window
 std::vector<sf::Texture> UI::textures; // Define the static textures vector
 float UI::dividerLinePositionX; // Divider line between options and graph
+sf::Vector2f UI::origin; // Define the static member
+
+
 // Load all textures
 void UI::textureInit()
 {
@@ -32,7 +35,11 @@ void UI::textureInit()
 bool UI::initialize(sf::RenderWindow& window)
 {
     windowSize = window.getSize();
-    std::cout << windowSize.x << std::endl;
+    dividerLinePositionX = static_cast<float>(0.25) * static_cast<float>(windowSize.x);
+    origin = sf::Vector2f(
+        dividerLinePositionX + (windowSize.x - dividerLinePositionX) / 2,
+        windowSize.y / 2
+    );
     textureInit(); // Load all textures during initialization
     return ImGui::SFML::Init(window);
 }
@@ -66,117 +73,122 @@ void UI::render(sf::RenderWindow& window)
     ImGui::SetWindowFontScale(1.5f);
     if (ImGui::Button("Scale"))
     {
-        std::cout << "Add" << std::endl;
+        Math::isSelected = true;
+        std::cout << "Scale clicked" << std::endl;
+        Math::transformShape("Scale");
     }
     if (ImGui::Button("Translate"))
     {
-        std::cout << "Option 2 Clicked!" << std::endl;
+        std::cout << "Translate clicked" << std::endl;
+        Math::transformShape("Translate");
     }
     if (ImGui::Button("Rotate"))
     {
-        std::cout << "Add" << std::endl;
+        std::cout << "Rotate clicked" << std::endl;
+        Math::transformShape("Rotate");
     }
     if (ImGui::Button("Reflect"))
     {
-        std::cout << "Option 2 Clicked!" << std::endl;
+        std::cout << "Reflect clicked" << std::endl;
+        Math::transformShape("Reflect");
     }
     if (ImGui::Button("Shear"))
     {
-        std::cout << "Add" << std::endl;
+        std::cout << "Shear clicked" << std::endl;
+        Math::transformShape("Shear");
     }
     ImGui::End();
 
     // New Grid Window
-ImGui::SetNextWindowPos(ImVec2(30, 550), ImGuiCond_Always);
-ImGui::SetNextWindowSize(ImVec2(430, 250));
+    ImGui::SetNextWindowPos(ImVec2(30, 550), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(430, 250));
 
-ImGui::Begin("Grid Window", nullptr,
-             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-ImGui::SetWindowFontScale(1.5f);
+    ImGui::Begin("Grid Window", nullptr,
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::SetWindowFontScale(1.5f);
 
-// Create a 2x3 grid (2 rows, 3 columns)
-constexpr int numRows = 2;
-const int numCols = 3;
-constexpr float cellWidth = 120.0f;
-constexpr float cellHeight = 100.0f;
-static int selectedTextureIndex = -1; // Add this to track selection
+    // Create a 2x3 grid (2 rows, 3 columns)
+    constexpr int numRows = 2;
+    const int numCols = 3;
+    constexpr float cellWidth = 120.0f;
+    constexpr float cellHeight = 100.0f;
+    static int selectedTextureIndex = -1; // Add this to track selection
 
-for (int row = 0; row < numRows; row++)
-{
-    for (int col = 0; col < numCols; col++)
+    for (int row = 0; row < numRows; row++)
     {
-        if (col > 0) ImGui::SameLine();
-
-        int textureIndex = row * numCols + col;
-        const auto textureID = (ImTextureID)static_cast<uintptr_t>(textures[textureIndex].getNativeHandle());
-
-        // Add selected state styling
-        bool isSelected = (selectedTextureIndex == textureIndex);
-        if (isSelected)
+        for (int col = 0; col < numCols; col++)
         {
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 0, 1));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
-        }
+            if (col > 0) ImGui::SameLine();
 
-        if (ImGui::ImageButton(std::to_string(textureIndex).c_str(), textureID,
-                               ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1)))
-        {
-            selectedTextureIndex = textureIndex; // Update selected index
-            switch (textureIndex)
+            int textureIndex = row * numCols + col;
+            const auto textureID = (ImTextureID)static_cast<uintptr_t>(textures[textureIndex].getNativeHandle());
+
+            // Add selected state styling
+            bool isSelected = (selectedTextureIndex == textureIndex);
+            if (isSelected)
             {
-            case 0:
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 0, 1));
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+            }
+
+            if (ImGui::ImageButton(std::to_string(textureIndex).c_str(), textureID,
+                                   ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1)))
+            {
+                selectedTextureIndex = textureIndex; // Update selected index
+                switch (textureIndex)
                 {
-                    Math::hasShape = false;
-                    Math::setCurrentShape(Math::ShapeType::Rectangle);
+                case 0:
+                    {
+                        Math::hasShape = false;
+                        Math::setCurrentShape(Math::ShapeType::Rectangle);
+                        break;
+                    }
+                case 1:
+                    Math::setCurrentShape(Math::ShapeType::Triangle);
+                    break;
+                case 2:
+                    Math::setCurrentShape(Math::ShapeType::Circle);
+                    break;
+                case 3:
+                    Math::setCurrentShape(Math::ShapeType::Ellipse);
+                    break;
+                case 4:
+                    Math::setCurrentShape(Math::ShapeType::Line);
+                    break;
+                case 5:
+                    Math::setCurrentShape(Math::ShapeType::LetterA);
+                    break;
+                default:
                     break;
                 }
-            case 1:
-                Math::setCurrentShape(Math::ShapeType::Triangle);
-                break;
-            case 2:
-                Math::setCurrentShape(Math::ShapeType::Circle);
-                break;
-            case 3:
-                Math::setCurrentShape(Math::ShapeType::Ellipse);
-                break;
-            case 4:
-                Math::setCurrentShape(Math::ShapeType::Line);
-                break;
-            case 5:
-                Math::setCurrentShape(Math::ShapeType::LetterA);
-                break;
-            default:
-                break;
+            }
+
+            // Add hover effect (only if not selected)
+            if (ImGui::IsItemHovered() && !isSelected)
+            {
+                ImGui::GetWindowDrawList()->AddRect(
+                    ImGui::GetItemRectMin(),
+                    ImGui::GetItemRectMax(),
+                    IM_COL32(255, 255, 0, 255), // Yellow border
+                    0.0f, // rounding
+                    0, // flags
+                    2.0f // thickness
+                );
+            }
+
+            // Pop selected state styling
+            if (isSelected)
+            {
+                ImGui::PopStyleVar();
+                ImGui::PopStyleColor();
             }
         }
-
-        // Add hover effect (only if not selected)
-        if (ImGui::IsItemHovered() && !isSelected)
-        {
-            ImGui::GetWindowDrawList()->AddRect(
-                ImGui::GetItemRectMin(),
-                ImGui::GetItemRectMax(),
-                IM_COL32(255, 255, 0, 255), // Yellow border
-                0.0f, // rounding
-                0, // flags
-                2.0f // thickness
-            );
-        }
-
-        // Pop selected state styling
-        if (isSelected)
-        {
-            ImGui::PopStyleVar();
-            ImGui::PopStyleColor();
-        }
     }
-}
 
-ImGui::End();
+    ImGui::End();
 
 
     // Divider line
-    dividerLinePositionX = static_cast<float>(0.25) * static_cast<float>(windowSize.x);
     sf::RectangleShape dividerLine({1.f, static_cast<float>(windowSize.y)});
     dividerLine.setPosition({dividerLinePositionX, 0.f});
 
@@ -208,9 +220,6 @@ void UI::drawCartesianGraph(sf::RenderWindow& window)
     const float graphWidth = static_cast<float>(windowSize.x) - dividerLinePositionX;
     const auto graphHeight = static_cast<float>(windowSize.y);
 
-    // Calculate the origin (center of the graph)
-    sf::Vector2f origin(dividerLinePositionX + graphWidth / 2, graphHeight / 2);
-
     // Draw grid lines
     const int numLinesX = static_cast<int>(graphWidth) / GRID_SIZE;
     const int numLinesY = static_cast<int>(graphHeight) / GRID_SIZE;
@@ -237,36 +246,30 @@ void UI::drawCartesianGraph(sf::RenderWindow& window)
     // X-axis
     sf::RectangleShape xAxis(sf::Vector2f(graphWidth, AXIS_THICKNESS));
     xAxis.setPosition({dividerLinePositionX, origin.y});
-    xAxis.setFillColor(sf::Color(255,255,255, 30));
+    xAxis.setFillColor(sf::Color(255, 255, 255, 30));
     window.draw(xAxis);
 
     // Y-axis
     sf::RectangleShape yAxis(sf::Vector2f(AXIS_THICKNESS, graphHeight));
     yAxis.setPosition({origin.x, 0});
-    yAxis.setFillColor(sf::Color(255,255,255, 30));
+    yAxis.setFillColor(sf::Color(255, 255, 255, 30));
     window.draw(yAxis);
 }
 
 // Utility functions for coordinate conversion
 sf::Vector2f UI::windowToGraph(const sf::Vector2f windowCoord)
 {
-    const float dividerX = 0.25f * windowSize.x;
-    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX) / 2, windowSize.y / 2);
-
     return sf::Vector2f(
         (windowCoord.x - origin.x) / GRID_SIZE,
-        (origin.y - windowCoord.y) / GRID_SIZE // Inverted Y because SFML Y grows downward
+        (origin.y - windowCoord.y) / GRID_SIZE
     );
 }
 
 sf::Vector2f UI::graphToWindow(sf::Vector2f graphCoord)
 {
-    const float dividerX = 0.25f * windowSize.x;
-    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX) / 2, windowSize.y / 2);
-
     return sf::Vector2f(
         origin.x + graphCoord.x * GRID_SIZE,
-        origin.y - graphCoord.y * GRID_SIZE // Inverted Y because SFML Y grows downward
+        origin.y - graphCoord.y * GRID_SIZE
     );
 }
 

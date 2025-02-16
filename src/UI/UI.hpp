@@ -13,14 +13,14 @@
 
 class UI {
 private:
-    static const int GRID_SIZE = 20; // Size of each grid cell in pixels
     static const int AXIS_THICKNESS = 2;
     static const int GRID_LINE_THICKNESS = 1;
 
     static void drawCartesianGraph(sf::RenderWindow& window);
-
+    static sf::Vector2f origin; // Add this line
 
 public:
+    static const int GRID_SIZE = 20; // Size of each grid cell in pixels
     static bool initialize(sf::RenderWindow& window);
     static void render(sf::RenderWindow& window);
     static std::vector<sf::Texture> textures;
@@ -33,6 +33,8 @@ public:
 
     static sf::Vector2f windowToGraph(sf::Vector2f windowCoord);
     static sf::Vector2f graphToWindow(sf::Vector2f graphCoord);
+
+    static const sf::Vector2f& getOrigin() { return origin; } // Add getter
 };
 
 #endif // UI_HPP
