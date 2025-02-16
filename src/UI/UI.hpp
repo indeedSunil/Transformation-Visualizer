@@ -22,6 +22,9 @@ private:
     //for transformation windows
     static bool showTransformationWindow;
     static int fromWhereItCame;
+    static bool showColorWindow;
+
+
 
 
 

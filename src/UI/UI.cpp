@@ -8,6 +8,7 @@ std::vector<sf::Texture> UI::textures; // Define the static textures vector
 float UI::dividerLinePositionX; // Divider line between options and graph
 //for scaling
 bool UI::showTransformationWindow = false;
+bool UI::showColorWindow = false;
 int UI::fromWhereItCame = 0;
 
 sf::Vector2f UI::origin; // Define the static member
@@ -39,24 +40,43 @@ void UI::textureInit()
 bool UI::initialize(sf::RenderWindow& window)
 {
     windowSize = window.getSize();
+
+
+
+
+
+
     dividerLinePositionX = static_cast<float>(0.25) * static_cast<float>(windowSize.x);
     origin = sf::Vector2f(
         dividerLinePositionX + (windowSize.x - dividerLinePositionX) / 2,
         windowSize.y / 2
     );
-    textureInit(); // Load all textures during initialization
+    textureInit();
+
     return ImGui::SFML::Init(window);
 }
 
 void UI::render(sf::RenderWindow& window)
 {
+
+
+
+
+
+
     // Buttons to add shape or clear canvas
     ImGui::SetNextWindowPos(ImVec2(30, 100), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(200, 100));
+    ImGui::SetNextWindowSize(ImVec2(200, 130));
 
     ImGui::Begin("Options ", nullptr,
                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::Separator();
     ImGui::SetWindowFontScale(1.5f);
+    if (ImGui::Button("Fill Color"))
+    {
+        showColorWindow=true;
+        std::cout << "Add" << std::endl;
+    }
     if (ImGui::Button("Hide Grid Numbers"))
     {
         std::cout << "Add" << std::endl;
@@ -68,12 +88,74 @@ void UI::render(sf::RenderWindow& window)
     }
     ImGui::End();
 
+    //color window:
+    if (showColorWindow)
+    {
+        ImGui::SetNextWindowPos(ImVec2(240, 100), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(200, 130), ImGuiCond_Always);
+
+        if (ImGui::Begin("Color Selection", &showColorWindow,
+                         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+        {
+            ImGui::SetWindowFontScale(1.5f);
+
+            // Define colors
+            const ImVec4 colors[] = {
+                ImVec4(1.0f, 0.0f, 0.0f, 1.0f), // Red
+                ImVec4(0.0f, 1.0f, 0.0f, 1.0f), // Green
+                ImVec4(0.0f, 0.0f, 1.0f, 1.0f)  // Blue
+            };
+
+            // Create a 1x3 grid of colored buttons
+            for (int i = 0; i < 3; i++)
+            {
+                if (i > 0) ImGui::SameLine();
+
+                // Push color style for the button
+                ImGui::PushStyleColor(ImGuiCol_Button, colors[i]);
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colors[i]);
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, colors[i]);
+
+                // Create a square button
+                if (ImGui::Button(("##Color" + std::to_string(i)).c_str(), ImVec2(45, 45)))
+                {
+                    // Handle color selection
+                    switch (i)
+                    {
+                    case 0:
+                        std::cout << "Red color selected" << std::endl;
+                        break;
+                    case 1:
+                        std::cout << "Green color selected" << std::endl;
+                        break;
+                    case 2:
+                        std::cout << "Blue color selected" << std::endl;
+                        break;
+                    }
+
+
+                }
+
+                // Pop color style
+                ImGui::PopStyleColor(3);
+            }
+
+            // Add a cancel button
+            ImGui::Spacing();
+            ImGui::Spacing();
+
+
+            ImGui::End();
+        }
+    }
+
     // Options for 2D transformations
     ImGui::SetNextWindowPos(ImVec2(30, 250), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(200, 250));
+    ImGui::SetNextWindowSize(ImVec2(200, 200));
 
     ImGui::Begin("Transformations", nullptr,
                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::Separator();
     ImGui::SetWindowFontScale(1.5f);
     if (ImGui::Button("Scale"))
     {
@@ -120,7 +202,8 @@ void UI::render(sf::RenderWindow& window)
 //transformations window-scaling window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 1)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
+        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Set fixed size
 
         if (ImGui::Begin("Scale Transform", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -164,6 +247,9 @@ void UI::render(sf::RenderWindow& window)
                 scaleY = std::max(0.1f, std::min(scaleY, 5.0f));
                 std::cout << "Y Scale changed via input: " << scaleY << std::endl;
             }
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
 
             if (ImGui::Button("Apply Scale")) {
                 // Add your scale transformation logic here
@@ -175,7 +261,8 @@ void UI::render(sf::RenderWindow& window)
     //transformations window-translation window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 2)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
+        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Translate", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -219,6 +306,9 @@ void UI::render(sf::RenderWindow& window)
                 translateY = std::max(-100.0f, std::min(translateY, 100.0f));
                 std::cout << "Y Translation changed via input: " << translateY << std::endl;
             }
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
             if (ImGui::Button("Apply Translate")) {
                 // Add your scale transformation logic here
 
@@ -229,7 +319,9 @@ void UI::render(sf::RenderWindow& window)
     //transformations window-rotation window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 3)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+
+        ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
+        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Rotate", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -254,7 +346,9 @@ void UI::render(sf::RenderWindow& window)
                 // Clamp the input value between -180 and 180
                 rotateAngle = std::max(-180.0f, std::min(rotateAngle, 180.0f));
                 std::cout << "Rotation Angle changed via input: " << rotateAngle << std::endl;
-            }
+            } ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
 
             if (ImGui::Button("Apply Rotate")) {
                 // Add your scale transformation logic here
@@ -265,47 +359,105 @@ void UI::render(sf::RenderWindow& window)
     }
     //transformations window-reflection window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 4)
+{
+    ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Increased size to accommodate more options
+
+    if (ImGui::Begin("Reflect", &showTransformationWindow,
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetWindowFontScale(1.5f);
 
-        if (ImGui::Begin("Reflect", &showTransformationWindow,
-                         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+        // Static variables to store the reflection options
+        static int reflectionType = 0;
+        static float m = 1.0f; // Slope for y=mx+c
+        static float c = 0.0f; // Y-intercept for y=mx+c
+        static bool showLineParams = false;
+
+        // Radio buttons for reflection options
+        ImGui::Text("Reflection About:");
+        if (ImGui::RadioButton("X-axis (y=0)", &reflectionType, 0))
         {
-            ImGui::SetWindowFontScale(1.5f);
-
-            // Static variables to store the reflection values
-            static bool reflectX = false;
-            static bool reflectY = false;
-
-            // X Reflection
-            ImGui::Text("Reflect X:");
-            // Checkbox for X
-            if (ImGui::Checkbox("##CheckboxX", &reflectX))
-            {
-                // The checkbox was changed
-                std::cout << "X Reflection changed via checkbox: " << reflectX << std::endl;
-            }
-
-            // Y Reflection
-            ImGui::Text("Reflect Y:");
-            // Checkbox for Y
-            if (ImGui::Checkbox("##CheckboxY", &reflectY))
-            {
-                // The checkbox was changed
-                std::cout << "Y Reflection changed via checkbox: " << reflectY << std::endl;
-            }
-
-            if (ImGui::Button("Apply Reflect")) {
-                // Add your scale transformation logic here
-                std::cout << "Applying reflection: " << reflectX << ", " << reflectY << std::endl;
-            }
+            showLineParams = false;
         }
-        ImGui::End();
+        if (ImGui::RadioButton("Y-axis (x=0)", &reflectionType, 1))
+        {
+            showLineParams = false;
+        }
+        if (ImGui::RadioButton("Line y=x", &reflectionType, 2))
+        {
+            showLineParams = false;
+        }
+        if (ImGui::RadioButton("Line y=-x", &reflectionType, 3))
+        {
+            showLineParams = false;
+        }
+        if (ImGui::RadioButton("Line y=mx+c", &reflectionType, 4))
+        {
+            showLineParams = true;
+        }
+
+        // Show slope and y-intercept inputs if y=mx+c is selected
+        if (showLineParams)
+        {
+            ImGui::Spacing();
+            ImGui::Text("Line Parameters:");
+            ImGui::PushItemWidth(150);
+
+            // Input for slope (m)
+            ImGui::Text("Slope (m):");
+            ImGui::SameLine();
+            ImGui::InputFloat("##slope", &m, 0.1f, 1.0f, "%.2f");
+
+            // Input for y-intercept (c)
+            ImGui::Text("Y-intercept (c):");
+            ImGui::SameLine();
+            ImGui::InputFloat("##intercept", &c, 0.1f, 1.0f, "%.2f");
+
+            ImGui::PopItemWidth();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // Apply button
+        if (ImGui::Button("Apply Reflection", ImVec2(-1, 40)))
+        {
+            // Print the selected reflection type and parameters
+            switch (reflectionType)
+            {
+                case 0:
+                    std::cout << "Reflecting about X-axis (y=0)" << std::endl;
+                    break;
+                case 1:
+                    std::cout << "Reflecting about Y-axis (x=0)" << std::endl;
+                    break;
+                case 2:
+                    std::cout << "Reflecting about y=x" << std::endl;
+                    break;
+                case 3:
+                    std::cout << "Reflecting about y=-x" << std::endl;
+                    break;
+                case 4:
+                    std::cout << "Reflecting about y=" << m << "x+" << c << std::endl;
+                    break;
+                default:
+                    break;
+            }
+
+
+        }
+
+
     }
+    ImGui::End();
+}
     //transformations window-shear window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 5)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
+        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Shear", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -349,6 +501,10 @@ void UI::render(sf::RenderWindow& window)
                 shearY = std::max(-5.0f, std::min(shearY, 5.0f));
                 std::cout << "Y Shear changed via input: " << shearY << std::endl;
             }
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
             if (ImGui::Button("Apply Shear")) {
                 // Add your scale transformation logic here
 
@@ -363,8 +519,8 @@ void UI::render(sf::RenderWindow& window)
 
 
     // New Grid Window
-    ImGui::SetNextWindowPos(ImVec2(30, 550), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(430, 250));
+    ImGui::SetNextWindowPos(ImVec2(30, 500), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(417, 260));
 
     ImGui::Begin("Grid Window", nullptr,
                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
@@ -446,10 +602,10 @@ void UI::render(sf::RenderWindow& window)
                 ImGui::PopStyleColor();
             }
         }
+
     }
 
     ImGui::End();
-
 
     // Divider line
     sf::RectangleShape dividerLine({1.f, static_cast<float>(windowSize.y)});
