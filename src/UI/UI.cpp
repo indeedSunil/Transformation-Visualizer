@@ -1,4 +1,5 @@
 #include "UI.hpp"
+#include "Transformations/Transformations.hpp"
 
 #include <iostream>
 #include <ostream>
@@ -77,50 +78,43 @@ void UI::render(sf::RenderWindow& window)
     ImGui::SetWindowFontScale(1.5f);
     if (ImGui::Button("Scale"))
     {
-        UI::showTransformationWindow = true;  // Set to true when button is clicked
+        UI::showTransformationWindow = true; // Set to true when button is clicked
         UI::fromWhereItCame = 1;
-        std::cout << "Scale window opened" << std::endl;
-        Math::isSelected = true;
-        std::cout << "Scale clicked" << std::endl;
-        Math::transformShape("Scale");
     }
     if (ImGui::Button("Translate"))
     {
-        UI::showTransformationWindow = true;  // Set to true when button is clicked
+        UI::showTransformationWindow = true; // Set to true when button is clicked
         UI::fromWhereItCame = 2;
         std::cout << "Option 2 Clicked!" << std::endl;
         std::cout << "Translate clicked" << std::endl;
-        Math::transformShape("Translate");
     }
     if (ImGui::Button("Rotate"))
     {
-        UI::showTransformationWindow = true;  // Set to true when button is clicked
+        UI::showTransformationWindow = true; // Set to true when button is clicked
         UI::fromWhereItCame = 3;
         std::cout << "Add" << std::endl;
         std::cout << "Rotate clicked" << std::endl;
-        Math::transformShape("Rotate");
     }
     if (ImGui::Button("Reflect"))
     {
-        UI::showTransformationWindow = true;  // Set to true when button is clicked
+        UI::showTransformationWindow = true; // Set to true when button is clicked
         UI::fromWhereItCame = 4;
         std::cout << "Option 2 Clicked!" << std::endl;
         std::cout << "Reflect clicked" << std::endl;
-        Math::transformShape("Reflect");
     }
     if (ImGui::Button("Shear"))
     {
-        UI::showTransformationWindow = true;  // Set to true when button is clicked
+        UI::showTransformationWindow = true; // Set to true when button is clicked
         UI::fromWhereItCame = 5;
         std::cout << "Add" << std::endl;
         std::cout << "Shear clicked" << std::endl;
-        Math::transformShape("Shear");
     }
     ImGui::End();
-//transformations window-scaling window
+    //transformations window-scaling window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 1)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Scale Transform", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -136,46 +130,46 @@ void UI::render(sf::RenderWindow& window)
             // Slider for X
             if (ImGui::SliderFloat("##SliderX", &scaleX, 0.1f, 5.0f))
             {
-                // The slider was changed
-                std::cout << "X Scale changed via slider: " << scaleX << std::endl;
             }
+
             // Input field for X
             ImGui::SameLine();
             if (ImGui::InputFloat("##InputX", &scaleX, 0.1f, 1.0f, "%.1f"))
             {
                 // Clamp the input value between 0.1 and 5.0
                 scaleX = std::max(0.1f, std::min(scaleX, 5.0f));
-                std::cout << "X Scale changed via input: " << scaleX << std::endl;
             }
 
             // Y Scale
             ImGui::Text("Scale Factor Y:");
+
             // Slider for Y
             if (ImGui::SliderFloat("##SliderY", &scaleY, 0.1f, 5.0f))
             {
-                // The slider was changed
-                std::cout << "Y Scale changed via slider: " << scaleY << std::endl;
             }
+
             // Input field for Y
             ImGui::SameLine();
             if (ImGui::InputFloat("##InputY", &scaleY, 0.1f, 1.0f, "%.1f"))
             {
                 // Clamp the input value between 0.1 and 5.0
                 scaleY = std::max(0.1f, std::min(scaleY, 5.0f));
-                std::cout << "Y Scale changed via input: " << scaleY << std::endl;
             }
 
-            if (ImGui::Button("Apply Scale")) {
-                // Add your scale transformation logic here
-                std::cout << "Applying scale: " << scaleX << ", " << scaleY << std::endl;
+            if (ImGui::Button("Apply Scale"))
+            {
+                Math::isSelected = true;
+                Transformation::scale(Math::rectangle, {scaleX, scaleY});
             }
         }
         ImGui::End();
     }
+
     //transformations window-translation window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 2)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Translate", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -191,45 +185,45 @@ void UI::render(sf::RenderWindow& window)
             // Slider for X
             if (ImGui::SliderFloat("##SliderX", &translateX, -100.0f, 100.0f))
             {
-                // The slider was changed
-                std::cout << "X Translation changed via slider: " << translateX << std::endl;
             }
+
             // Input field for X
             ImGui::SameLine();
             if (ImGui::InputFloat("##InputX", &translateX, 1.0f, 10.0f, "%.1f"))
             {
                 // Clamp the input value between -100 and 100
                 translateX = std::max(-100.0f, std::min(translateX, 100.0f));
-                std::cout << "X Translation changed via input: " << translateX << std::endl;
             }
 
             // Y Translation
             ImGui::Text("Translate Y:");
+
             // Slider for Y
             if (ImGui::SliderFloat("##SliderY", &translateY, -100.0f, 100.0f))
             {
-                // The slider was changed
-                std::cout << "Y Translation changed via slider: " << translateY << std::endl;
             }
+
             // Input field for Y
             ImGui::SameLine();
             if (ImGui::InputFloat("##InputY", &translateY, 1.0f, 10.0f, "%.1f"))
             {
                 // Clamp the input value between -100 and 100
                 translateY = std::max(-100.0f, std::min(translateY, 100.0f));
-                std::cout << "Y Translation changed via input: " << translateY << std::endl;
             }
-            if (ImGui::Button("Apply Translate")) {
-                // Add your scale transformation logic here
-
+            if (ImGui::Button("Apply Translate"))
+            {
+                Math::isSelected = true;
+                Transformation::translate(Math::rectangle, {translateX, translateY});
             }
         }
         ImGui::End();
     }
+
     //transformations window-rotation window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 3)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Rotate", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -244,29 +238,30 @@ void UI::render(sf::RenderWindow& window)
             // Slider for rotation
             if (ImGui::SliderFloat("##SliderAngle", &rotateAngle, -180.0f, 180.0f))
             {
-                // The slider was changed
-                std::cout << "Rotation Angle changed via slider: " << rotateAngle << std::endl;
             }
+
             // Input field for rotation
             ImGui::SameLine();
             if (ImGui::InputFloat("##InputAngle", &rotateAngle, 1.0f, 10.0f, "%.1f"))
             {
                 // Clamp the input value between -180 and 180
                 rotateAngle = std::max(-180.0f, std::min(rotateAngle, 180.0f));
-                std::cout << "Rotation Angle changed via input: " << rotateAngle << std::endl;
             }
 
-            if (ImGui::Button("Apply Rotate")) {
-                // Add your scale transformation logic here
-                std::cout << "Applying rotation: " << rotateAngle << std::endl;
+            if (ImGui::Button("Apply Rotate"))
+            {
+                Math::isSelected = true;
+                Transformation::rotate(Math::rectangle, rotateAngle);
             }
         }
         ImGui::End();
     }
+
     //transformations window-reflection window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 4)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Reflect", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -279,33 +274,34 @@ void UI::render(sf::RenderWindow& window)
 
             // X Reflection
             ImGui::Text("Reflect X:");
+
             // Checkbox for X
             if (ImGui::Checkbox("##CheckboxX", &reflectX))
             {
-                // The checkbox was changed
-                std::cout << "X Reflection changed via checkbox: " << reflectX << std::endl;
             }
 
             // Y Reflection
             ImGui::Text("Reflect Y:");
+
             // Checkbox for Y
             if (ImGui::Checkbox("##CheckboxY", &reflectY))
             {
-                // The checkbox was changed
-                std::cout << "Y Reflection changed via checkbox: " << reflectY << std::endl;
             }
 
-            if (ImGui::Button("Apply Reflect")) {
-                // Add your scale transformation logic here
-                std::cout << "Applying reflection: " << reflectX << ", " << reflectY << std::endl;
+            if (ImGui::Button("Apply Reflect"))
+            {
+                Math::isSelected = true;
+                Transformation::reflect(Math::rectangle, reflectX);
             }
         }
         ImGui::End();
     }
+
     //transformations window-shear window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 5)
     {
-        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Shear", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -321,45 +317,39 @@ void UI::render(sf::RenderWindow& window)
             // Slider for X
             if (ImGui::SliderFloat("##SliderX", &shearX, -5.0f, 5.0f))
             {
-                // The slider was changed
-                std::cout << "X Shear changed via slider: " << shearX << std::endl;
             }
+
             // Input field for X
             ImGui::SameLine();
             if (ImGui::InputFloat("##InputX", &shearX, 0.1f, 1.0f, "%.1f"))
             {
                 // Clamp the input value between -5.0 and 5.0
                 shearX = std::max(-5.0f, std::min(shearX, 5.0f));
-                std::cout << "X Shear changed via input: " << shearX << std::endl;
             }
 
             // Y Shear
             ImGui::Text("Shear Y:");
+
             // Slider for Y
             if (ImGui::SliderFloat("##SliderY", &shearY, -5.0f, 5.0f))
             {
-                // The slider was changed
-                std::cout << "Y Shear changed via slider: " << shearY << std::endl;
             }
+
             // Input field for Y
             ImGui::SameLine();
             if (ImGui::InputFloat("##InputY", &shearY, 0.1f, 1.0f, "%.1f"))
             {
                 // Clamp the input value between -5.0 and 5.0
                 shearY = std::max(-5.0f, std::min(shearY, 5.0f));
-                std::cout << "Y Shear changed via input: " << shearY << std::endl;
             }
-            if (ImGui::Button("Apply Shear")) {
-                // Add your scale transformation logic here
-
+            if (ImGui::Button("Apply Shear"))
+            {
+                Math::isSelected = true;
+                Transformation::shear(Math::rectangle, {shearX, shearY});
             }
         }
         ImGui::End();
     }
-
-
-
-
 
 
     // New Grid Window

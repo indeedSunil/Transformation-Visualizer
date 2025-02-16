@@ -30,21 +30,6 @@ public:
 
     static bool isSelected;
     static void handleShapeSelection(const sf::Vector2f& mousePos);
-    static void transformShape(const std::string& transformationType);
-
-    // Add transformation functions
-    static void scaleShape(float scaleX, float scaleY);
-    static void translateShape(float dx, float dy);
-    static void rotateShape(float angle);
-    static void reflectShape(bool horizontally);
-    static void shearShape(float shearX, float shearY);
-
-
-private:
-    static ShapeType currentShape;
-    static bool isDrawing;
-    static sf::Vector2f startPos;
-    static sf::Vector2f currentPos;
 
     // Shape objects
     static sf::RectangleShape rectangle;
@@ -53,6 +38,13 @@ private:
     static sf::RectangleShape line;
     // static sf::EllipseShape ellipse;
     static sf::Text letterA;
+
+private:
+    static ShapeType currentShape;
+    static bool isDrawing;
+    static sf::Vector2f startPos;
+    static sf::Vector2f currentPos;
+
 
     static void updateShape();
 
