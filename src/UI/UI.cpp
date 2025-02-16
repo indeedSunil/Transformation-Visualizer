@@ -15,7 +15,7 @@ void UI::textureInit()
         "assets/images/circle.png",
         "assets/images/ellipse.png",
         "assets/images/line.png",
-        "assets/images/a.png"
+        "assets/images/actor.jpg"
     };
 
     textures.resize(textureFiles.size()); // Resize the vector to hold all textures
@@ -46,7 +46,7 @@ void UI::render(sf::RenderWindow& window)
     ImGui::Begin("Options ", nullptr,
                  ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
     ImGui::SetWindowFontScale(1.5f);
-    if (ImGui::Button("Add Shape"))
+    if (ImGui::Button("Hide Grid Numbers"))
     {
         std::cout << "Add" << std::endl;
     }
@@ -87,73 +87,92 @@ void UI::render(sf::RenderWindow& window)
     ImGui::End();
 
     // New Grid Window
-    ImGui::SetNextWindowPos(ImVec2(30, 550), ImGuiCond_Always); // Positioned below "Transformations"
-    ImGui::SetNextWindowSize(ImVec2(430, 250)); // Increased height to fit 2 rows
+ImGui::SetNextWindowPos(ImVec2(30, 550), ImGuiCond_Always);
+ImGui::SetNextWindowSize(ImVec2(430, 250));
 
-    ImGui::Begin("Grid Window", nullptr,
-                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-    ImGui::SetWindowFontScale(1.5f);
+ImGui::Begin("Grid Window", nullptr,
+             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+ImGui::SetWindowFontScale(1.5f);
 
-    // Create a 2x3 grid (2 rows, 3 columns)
-    constexpr int numRows = 2; // Number of rows
-    const int numCols = 3; // Number of columns
-    constexpr float cellWidth = 120.0f; // Fixed width for each cell
-    constexpr float cellHeight = 100.0f; // Fixed height for each cell
+// Create a 2x3 grid (2 rows, 3 columns)
+constexpr int numRows = 2;
+const int numCols = 3;
+constexpr float cellWidth = 120.0f;
+constexpr float cellHeight = 100.0f;
+static int selectedTextureIndex = -1; // Add this to track selection
 
-    for (int row = 0; row < numRows; row++)
+for (int row = 0; row < numRows; row++)
+{
+    for (int col = 0; col < numCols; col++)
     {
-        for (int col = 0; col < numCols; col++)
+        if (col > 0) ImGui::SameLine();
+
+        int textureIndex = row * numCols + col;
+        const auto textureID = (ImTextureID)static_cast<uintptr_t>(textures[textureIndex].getNativeHandle());
+
+        // Add selected state styling
+        bool isSelected = (selectedTextureIndex == textureIndex);
+        if (isSelected)
         {
-            if (col > 0) ImGui::SameLine(); // Place cells in the same row
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 0, 1));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+        }
 
-            // Get the texture for the current cell
-            int textureIndex = row * numCols + col;
-            const auto textureID = (ImTextureID)static_cast<uintptr_t>(textures[textureIndex].getNativeHandle());
-
-            // Display the texture in the cell
-            if (ImGui::ImageButton(std::to_string(textureIndex).c_str(), textureID,
-                                   ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1)))
+        if (ImGui::ImageButton(std::to_string(textureIndex).c_str(), textureID,
+                               ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1)))
+        {
+            selectedTextureIndex = textureIndex; // Update selected index
+            switch (textureIndex)
             {
-                switch (textureIndex)
+            case 0:
                 {
-                case 0:
-                    {
-                        Math::hasShape = false;
-                        Math::setCurrentShape(Math::ShapeType::Rectangle);
-                        break;
-                    }
-                case 1:
-                    Math::setCurrentShape(Math::ShapeType::Triangle);
-                    break;
-                case 2:
-                    Math::setCurrentShape(Math::ShapeType::Circle);
-                    break;
-                case 3:
-                    Math::setCurrentShape(Math::ShapeType::Ellipse);
-                    break;
-                case 4:
-                    Math::setCurrentShape(Math::ShapeType::Line);
-                    break;
-                case 5:
-                    Math::setCurrentShape(Math::ShapeType::LetterA);
-                    break;
-                default:
+                    Math::hasShape = false;
+                    Math::setCurrentShape(Math::ShapeType::Rectangle);
                     break;
                 }
-            }
-
-            // Add hover effect
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 0, 1)); // Yellow border on hover
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f); // Increase border thickness
-                ImGui::PopStyleVar(); // Reset border thickness
-                ImGui::PopStyleColor(); // Reset border color
+            case 1:
+                Math::setCurrentShape(Math::ShapeType::Triangle);
+                break;
+            case 2:
+                Math::setCurrentShape(Math::ShapeType::Circle);
+                break;
+            case 3:
+                Math::setCurrentShape(Math::ShapeType::Ellipse);
+                break;
+            case 4:
+                Math::setCurrentShape(Math::ShapeType::Line);
+                break;
+            case 5:
+                Math::setCurrentShape(Math::ShapeType::LetterA);
+                break;
+            default:
+                break;
             }
         }
-    }
 
-    ImGui::End();
+        // Add hover effect (only if not selected)
+        if (ImGui::IsItemHovered() && !isSelected)
+        {
+            ImGui::GetWindowDrawList()->AddRect(
+                ImGui::GetItemRectMin(),
+                ImGui::GetItemRectMax(),
+                IM_COL32(255, 255, 0, 255), // Yellow border
+                0.0f, // rounding
+                0, // flags
+                2.0f // thickness
+            );
+        }
+
+        // Pop selected state styling
+        if (isSelected)
+        {
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor();
+        }
+    }
+}
+
+ImGui::End();
 
 
     // Divider line
