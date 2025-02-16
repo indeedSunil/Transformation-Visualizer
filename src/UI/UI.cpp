@@ -3,8 +3,9 @@
 #include <iostream>
 #include <ostream>
 
-sf::Vector2u UI::windowWidth;
+sf::Vector2u UI::windowSize;
 std::vector<sf::Texture> UI::textures; // Define the static textures vector
+float UI::dividerLinePositionX; // Divider line between options and graph
 
 // Load all textures
 void UI::textureInit() {
@@ -27,11 +28,12 @@ void UI::textureInit() {
 }
 
 bool UI::initialize(sf::RenderWindow& window) {
-    windowWidth = window.getSize();
-    std::cout << windowWidth.x << std::endl;
+    windowSize = window.getSize();
+    std::cout << windowSize.x << std::endl;
     textureInit(); // Load all textures during initialization
     return ImGui::SFML::Init(window);
 }
+
 void UI::render(sf::RenderWindow& window) {
     // Buttons to add shape or clear canvas
     ImGui::SetNextWindowPos(ImVec2(30, 100), ImGuiCond_Always);
@@ -78,7 +80,7 @@ void UI::render(sf::RenderWindow& window) {
     ImGui::SetWindowFontScale(1.5f);
 
     // Create a 2x3 grid (2 rows, 3 columns)
-    const int numRows = 2; // Number of rows
+    constexpr int numRows = 2; // Number of rows
     const int numCols = 3; // Number of columns
     const float cellWidth = 120.0f; // Fixed width for each cell
     const float cellHeight = 100.0f; // Fixed height for each cell
@@ -106,12 +108,10 @@ void UI::render(sf::RenderWindow& window) {
 
     ImGui::End();
 
-    //2d graph
-
 
     // Divider line
-    float dividerLinePositionX = static_cast<float>(0.25) * static_cast<float>(windowWidth.x);
-    sf::RectangleShape dividerLine({1.f, static_cast<float>(windowWidth.y)});
+    dividerLinePositionX = static_cast<float>(0.25) * static_cast<float>(windowSize.x);
+    sf::RectangleShape dividerLine({1.f, static_cast<float>(windowSize.y)});
     dividerLine.setPosition({dividerLinePositionX, 0.f});
 
     // Title text container
@@ -132,6 +132,98 @@ void UI::render(sf::RenderWindow& window) {
     window.draw(dividerLine);
     window.draw(titleTextContainer);
     window.draw(titleText);
+    drawCartesianGraph(window);
+}
+
+void UI::drawCartesianGraph(sf::RenderWindow& window) {
+    // Calculate the graph area (right side of the divider)
+    const float graphWidth = windowSize.x - dividerLinePositionX;
+    const float graphHeight = windowSize.y;
+
+    // Calculate the origin (center of the graph)
+    sf::Vector2f origin(dividerLinePositionX + graphWidth/2, graphHeight/2);
+
+    // Draw grid lines
+    const int numLinesX = graphWidth / GRID_SIZE;
+    const int numLinesY = graphHeight / GRID_SIZE;
+
+    // Vertical grid lines
+    for(int i = -numLinesX/2; i <= numLinesX/2; i++) {
+        sf::RectangleShape line(sf::Vector2f(GRID_LINE_THICKNESS, graphHeight));
+        line.setPosition({origin.x + i * GRID_SIZE, 0});
+        line.setFillColor(sf::Color(50, 50, 50));
+        window.draw(line);
+    }
+
+    // Horizontal grid lines
+    for(int i = -numLinesY/2; i <= numLinesY/2; i++) {
+        sf::RectangleShape line(sf::Vector2f(graphWidth, GRID_LINE_THICKNESS));
+        line.setPosition({dividerLinePositionX, origin.y + i * GRID_SIZE});
+        line.setFillColor(sf::Color(50, 50, 50));
+        window.draw(line);
+    }
+
+    // Draw axes
+    // X-axis
+    sf::RectangleShape xAxis(sf::Vector2f(graphWidth, AXIS_THICKNESS));
+    xAxis.setPosition({dividerLinePositionX, origin.y});
+    xAxis.setFillColor(sf::Color::White);
+    window.draw(xAxis);
+
+    // Y-axis
+    sf::RectangleShape yAxis(sf::Vector2f(AXIS_THICKNESS, graphHeight));
+    yAxis.setPosition({origin.x, 0});
+    yAxis.setFillColor(sf::Color::White);
+    window.draw(yAxis);
+
+    // Draw axis labels and numbers
+    for(int i = -10; i <= 10; i++) {
+        if(i == 0) continue; // Skip 0 as it's the origin
+
+        // X-axis numbers
+        sf::Text xLabel(Core::font);
+        xLabel.setString("X");
+        xLabel.setFont(Core::font);
+        xLabel.setString(std::to_string(i));
+        xLabel.setCharacterSize(12);
+        xLabel.setFillColor(sf::Color::White);
+        xLabel.setPosition(
+            {origin.x + i * GRID_SIZE - 5,
+            origin.y + 5}
+        );
+        window.draw(xLabel);
+
+        // Y-axis numbers
+        sf::Text yLabel(Core::font);
+        yLabel.setString("Y");
+        yLabel.setFont(Core::font);
+        yLabel.setString(std::to_string(-i)); // Negative because Y is inverted in SFML
+        yLabel.setCharacterSize(12);
+        yLabel.setFillColor(sf::Color::White);
+        yLabel.setPosition({origin.x + 5, origin.y + i * GRID_SIZE - 10});
+        window.draw(yLabel);
+    }
+}
+
+// Utility functions for coordinate conversion
+sf::Vector2f UI::windowToGraph(const sf::Vector2f windowCoord) {
+    const float dividerX = 0.25f * windowSize.x;
+    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX)/2, windowSize.y/2);
+
+    return sf::Vector2f(
+        (windowCoord.x - origin.x) / GRID_SIZE,
+        (origin.y - windowCoord.y) / GRID_SIZE  // Inverted Y because SFML Y grows downward
+    );
+}
+
+sf::Vector2f UI::graphToWindow(sf::Vector2f graphCoord) {
+    const float dividerX = 0.25f * windowSize.x;
+    const sf::Vector2f origin(dividerX + (windowSize.x - dividerX)/2, windowSize.y/2);
+
+    return sf::Vector2f(
+        origin.x + graphCoord.x * GRID_SIZE,
+        origin.y - graphCoord.y * GRID_SIZE  // Inverted Y because SFML Y grows downward
+    );
 }
 
 void UI::shutdown() {
