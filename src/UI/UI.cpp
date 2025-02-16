@@ -1,4 +1,5 @@
 #include "UI.hpp"
+#include <Shapes/Shapes.hpp>
 #include "Transformations/Transformations.hpp"
 
 #include <iostream>
@@ -62,7 +63,7 @@ void UI::render(sf::RenderWindow& window)
     ImGui::SetWindowFontScale(1.5f);
     if (ImGui::Button("Fill Color"))
     {
-        showColorWindow=true;
+        showColorWindow = true;
         std::cout << "Add" << std::endl;
     }
     if (ImGui::Button("Hide Grid Numbers"))
@@ -71,8 +72,7 @@ void UI::render(sf::RenderWindow& window)
     }
     if (ImGui::Button("Clear Canvas"))
     {
-        Math::clearShape();
-        std::cout << "Clear Canvas clicked!" << std::endl;
+        Shapes::clearShape();
     }
     ImGui::End();
 
@@ -88,10 +88,10 @@ void UI::render(sf::RenderWindow& window)
             ImGui::SetWindowFontScale(1.5f);
 
             // Define colors
-            const ImVec4 colors[] = {
+            constexpr ImVec4 colors[] = {
                 ImVec4(1.0f, 0.0f, 0.0f, 1.0f), // Red
                 ImVec4(0.0f, 1.0f, 0.0f, 1.0f), // Green
-                ImVec4(0.0f, 0.0f, 1.0f, 1.0f)  // Blue
+                ImVec4(0.0f, 0.0f, 1.0f, 1.0f) // Blue
             };
 
             // Create a 1x3 grid of colored buttons
@@ -119,9 +119,9 @@ void UI::render(sf::RenderWindow& window)
                     case 2:
                         std::cout << "Blue color selected" << std::endl;
                         break;
+                    default:
+                        break;
                     }
-
-
                 }
 
                 // Pop color style
@@ -179,7 +179,7 @@ void UI::render(sf::RenderWindow& window)
         std::cout << "Shear clicked" << std::endl;
     }
     ImGui::End();
-//transformations window-scaling window
+    //transformations window-scaling window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 1)
     {
         ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
@@ -230,8 +230,8 @@ void UI::render(sf::RenderWindow& window)
 
             if (ImGui::Button("Apply Scale"))
             {
-                Math::isSelected = true;
-                Transformation::scale(Math::rectangle, {scaleX, scaleY});
+                Shapes::isSelected = true;
+                Transformation::scale(Shapes::rectangle, {scaleX, scaleY});
             }
         }
         ImGui::End();
@@ -241,7 +241,8 @@ void UI::render(sf::RenderWindow& window)
     if (UI::showTransformationWindow && UI::fromWhereItCame == 2)
     {
         ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
-        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Translate", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -288,8 +289,8 @@ void UI::render(sf::RenderWindow& window)
 
             if (ImGui::Button("Apply Translate"))
             {
-                Math::isSelected = true;
-                Transformation::translate(Math::rectangle, {translateX, translateY});
+                Shapes::isSelected = true;
+                Transformation::translate(Shapes::rectangle, {translateX, translateY});
             }
         }
         ImGui::End();
@@ -298,9 +299,9 @@ void UI::render(sf::RenderWindow& window)
     //transformations window-rotation window
     if (UI::showTransformationWindow && UI::fromWhereItCame == 3)
     {
-
         ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
-        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);  // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Rotate", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -331,8 +332,8 @@ void UI::render(sf::RenderWindow& window)
 
             if (ImGui::Button("Apply Rotate"))
             {
-                Math::isSelected = true;
-                Transformation::rotate(Math::rectangle, rotateAngle);
+                Shapes::isSelected = true;
+                Transformation::rotate(Shapes::rectangle, rotateAngle);
             }
         }
         ImGui::End();
@@ -427,10 +428,12 @@ void UI::render(sf::RenderWindow& window)
                 case 4:
                     std::cout << "Reflecting about y=" << m << "x+" << c << std::endl;
                     break;
+                default:
+                    break;
                 }
                 if (ImGui::Button("Apply Reflect"))
                 {
-                    Math::isSelected = true;
+                    Shapes::isSelected = true;
                     // Transformation::reflect(Math::rectangle, reflectX);
                 }
             }
@@ -442,7 +445,8 @@ void UI::render(sf::RenderWindow& window)
     if (UI::showTransformationWindow && UI::fromWhereItCame == 5)
     {
         ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
-        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Made slightly taller to accommodate new elements
+        ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
+        // Made slightly taller to accommodate new elements
 
         if (ImGui::Begin("Shear", &showTransformationWindow,
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -486,20 +490,16 @@ void UI::render(sf::RenderWindow& window)
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
-                // Add your scale transformation logic here
+            // Add your scale transformation logic here
 
             if (ImGui::Button("Apply Shear"))
             {
-                Math::isSelected = true;
-                Transformation::shear(Math::rectangle, {shearX, shearY});
+                Shapes::isSelected = true;
+                Transformation::shear(Shapes::rectangle, {shearX, shearY});
             }
         }
         ImGui::End();
     }
-
-
-
-
 
 
     // New Grid Window
@@ -586,7 +586,6 @@ void UI::render(sf::RenderWindow& window)
                 ImGui::PopStyleColor();
             }
         }
-
     }
 
     ImGui::End();

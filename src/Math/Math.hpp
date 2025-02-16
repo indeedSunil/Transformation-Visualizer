@@ -13,31 +13,11 @@ public:
         LetterA
     };
 
-    static bool isDragging;
-    static sf::Vector2f dragOffset;
     static void handleMouseEvent(const sf::Event& event, sf::RenderWindow& window);
     static void render(sf::RenderWindow& window);
     static void setCurrentShape(ShapeType shape);
-    static bool isDrawingEnabled() { return isDrawing; }
-    static void setDrawingEnabled(bool enabled) { isDrawing = enabled; }
-    static bool drawnOnce;
     static bool hasShape;  // true if a shape is currently stored
-    static void clearShape()
-    {
-        hasShape = false;
-        rectangle = sf::RectangleShape();
-    }
 
-    static bool isSelected;
-    static void handleShapeSelection(const sf::Vector2f& mousePos);
-
-    // Shape objects
-    static sf::RectangleShape rectangle;
-    static sf::CircleShape circle;
-    static sf::ConvexShape triangle;
-    static sf::RectangleShape line;
-    // static sf::EllipseShape ellipse;
-    static sf::Text letterA;
 
 private:
     static ShapeType currentShape;
@@ -45,10 +25,7 @@ private:
     static sf::Vector2f startPos;
     static sf::Vector2f currentPos;
 
-
-    static void updateShape();
-
-    static bool isShapeClicked(const sf::Vector2f& mousePos, const sf::FloatRect& bounds);
-    static sf::Vector2f getShapeCenter();
-    static void handleDragging(const sf::Vector2f& mousePos);
+    static void initializeShape(sf::RenderWindow& window);
+    static void finishDrawing(sf::RenderWindow& window);
+    static void displayCoordinates(sf::RenderWindow& window);
 };

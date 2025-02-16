@@ -13,8 +13,8 @@
 
 class UI {
 private:
-    static const int AXIS_THICKNESS = 2;
-    static const int GRID_LINE_THICKNESS = 1;
+    static constexpr int AXIS_THICKNESS = 2;
+    static constexpr int GRID_LINE_THICKNESS = 1;
 
     static void drawCartesianGraph(sf::RenderWindow& window);
     static sf::Vector2f origin; // Add this line
@@ -24,13 +24,8 @@ private:
     static int fromWhereItCame;
     static bool showColorWindow;
 
-
-
-
-
-
 public:
-    static const int GRID_SIZE = 20; // Size of each grid cell in pixels
+    static constexpr int GRID_SIZE = 20; // Size of each grid cell in pixels
     static bool initialize(sf::RenderWindow& window);
     static float scale_factor;
     static void render(sf::RenderWindow& window);
