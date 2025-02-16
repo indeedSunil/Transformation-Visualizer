@@ -20,7 +20,11 @@ add_subdirectory(external/SFML)
 add_subdirectory(external/imguiSfml)
 
 # Add executable
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES}
+        src/Transformations/Transformations.hpp
+        src/Transformations/Transformations.cpp
+        src/Shapes/Shapes.cpp
+        src/Shapes/Shapes.hpp)
 
 
 

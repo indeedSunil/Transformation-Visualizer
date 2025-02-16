@@ -1,8 +1,9 @@
 #include "Math.hpp"
 
 #include <cmath>
-
+#include <iomanip>
 #include "UI/UI.hpp"
+#include "Transformations/Transformations.hpp"
 #include <iostream>
 
 Math::ShapeType Math::currentShape = Math::ShapeType::None;
@@ -40,7 +41,6 @@ void Math::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window)
             sf::FloatRect bounds = rectangle.getGlobalBounds();
             if (isShapeClicked(mousePos, bounds))
             {
-                std::cout << "Shape Selected" << std::endl;
                 isSelected = true;
                 isDragging = true;
                 rectangle.setOutlineColor(sf::Color::Yellow);
@@ -88,13 +88,10 @@ void Math::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window)
                                 static_cast<float>(mouseMoved->position.y));
         if (isDragging && isSelected)
         {
-            std::cout << "Selected and dragging" << std::endl;
             handleDragging(mousePos);
         }
         else if (isDrawing)
         {
-            std::cout << "Drawing" << std::endl;
-            // Existing shape drawing logic
             currentPos = UI::windowToGraph(mousePos);
             updateShape();
         }
@@ -145,9 +142,30 @@ void Math::render(sf::RenderWindow& window)
 {
     if (hasShape || isDrawing)
     {
+        const sf::Vector2f position = rectangle.getPosition();
+        const sf::Vector2f size = rectangle.getSize();
+        sf::Text positionText(Core::font);
+
+        const sf::Vector2f A = UI::windowToGraph(position);
+        const sf::Vector2f B = UI::windowToGraph({position.x + size.x, position.y});
+        const sf::Vector2f C = UI::windowToGraph({position.x + size.x, position.y + size.y});
+        const sf::Vector2f D = UI::windowToGraph({position.x, position.y + size.y});
+
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2);
+        oss << "Co-ordinates of Shape:\n";
+        oss << "A: " << A.x << ", " << A.y << "\n";
+        oss << "B: " << B.x << ", " << B.y << "\n";
+        oss << "C: " << C.x << ", " << C.y << "\n";
+        oss << "D: " << D.x << ", " << D.y;
+
+        positionText.setString(oss.str());
+        positionText.setPosition({50.f, 850.f});
+        positionText.setCharacterSize(20);
+        positionText.setFillColor(sf::Color::White);
+        window.draw(positionText);
         window.draw(rectangle);
     }
-    // if (!isDrawing) return;
 
     switch (currentShape)
     {
@@ -156,7 +174,6 @@ void Math::render(sf::RenderWindow& window)
         break;
     default:
         break;
-    // Add other shape rendering here
     }
 }
 
@@ -189,88 +206,6 @@ sf::Vector2f Math::getShapeCenter()
     sf::FloatRect bounds = rectangle.getGlobalBounds();
     return sf::Vector2f(bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f);
 }
-
-void Math::transformShape(const std::string& transformationType)
-{
-    std::cout << "hasShape: " << hasShape << " isSelected: " << isSelected << std::endl;
-    if (!isSelected || !hasShape) return;
-
-    if (transformationType == "Scale")
-    {
-        scaleShape(1.5f, 1.5f); // Example: Scale by 1.5
-    }
-    else if (transformationType == "Translate")
-    {
-        translateShape(UI::GRID_SIZE, 0); // Example: Move right by one grid unit
-    }
-    else if (transformationType == "Rotate")
-    {
-        rotateShape(45.f); // Example: Rotate 45 degrees
-    }
-    else if (transformationType == "Reflect")
-    {
-        reflectShape(true); // Example: Reflect horizontally
-    }
-    else if (transformationType == "Shear")
-    {
-        shearShape(0.5f, 0.0f); // Example: Shear horizontally by 0.5
-    }
-}
-
-
-void Math::scaleShape(float scaleX, float scaleY)
-{
-    std::cout << "Scaling" << std::endl;
-    const sf::Vector2f currentSize = rectangle.getSize();
-    rectangle.setSize(sf::Vector2f(currentSize.x * scaleX, currentSize.y * scaleY));
-    // clearShape();
-    // window.draw(rectangle);
-}
-
-void Math::translateShape(float dx, float dy)
-{
-    const sf::Vector2f currentPos = rectangle.getPosition();
-    rectangle.setPosition({currentPos.x + dx, currentPos.y + dy});
-}
-
-void Math::rotateShape(float angle)
-{
-    const sf::Vector2f center = getShapeCenter();
-    rectangle.setOrigin({rectangle.getSize().x / 2.f, rectangle.getSize().y / 2.f});
-    rectangle.setPosition(center);
-    rectangle.rotate(sf::radians(angle));
-}
-
-void Math::reflectShape(const bool horizontally)
-{
-    sf::Vector2f scale = rectangle.getScale();
-    if (horizontally)
-    {
-        rectangle.setScale({-scale.x, scale.y});
-    }
-    else
-    {
-        rectangle.setScale({scale.x, -scale.y});
-    }
-}
-
-
-void Math::shearShape(const float shearX, const float shearY)
-{
-    // Note: SFML doesn't directly support shearing,
-    // you would need to implement a custom transform matrix
-    // This is a simplified version that scales one side
-    sf::Vector2f size = rectangle.getSize();
-    if (shearX != 0.0f)
-    {
-        rectangle.setSize(sf::Vector2f(size.x + size.y * shearX, size.y));
-    }
-    if (shearY != 0.0f)
-    {
-        rectangle.setSize(sf::Vector2f(size.x, size.y + size.x * shearY));
-    }
-}
-
 
 void Math::handleDragging(const sf::Vector2f& mousePos)
 {
