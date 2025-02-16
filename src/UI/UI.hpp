@@ -20,8 +20,16 @@ private:
     static void drawCartesianGraph(sf::RenderWindow& window);
 
 
+    //for transformation windows
+    static bool showTransformationWindow;
+    static int fromWhereItCame;
+
+
+
+
 public:
     static bool initialize(sf::RenderWindow& window);
+    static float scale_factor;
     static void render(sf::RenderWindow& window);
     static std::vector<sf::Texture> textures;
     static void textureInit(); // Load the texture
@@ -33,6 +41,10 @@ public:
 
     static sf::Vector2f windowToGraph(sf::Vector2f windowCoord);
     static sf::Vector2f graphToWindow(sf::Vector2f graphCoord);
+
+
 };
+
+
 
 #endif // UI_HPP
