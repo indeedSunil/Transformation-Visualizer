@@ -94,7 +94,31 @@ void UI::render(sf::RenderWindow& window) {
             const auto textureID = (ImTextureID)static_cast<uintptr_t>(textures[textureIndex].getNativeHandle());
 
             // Display the texture in the cell
-            ImGui::ImageButton(std::to_string(textureIndex).c_str(), textureID, ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1));
+            if (ImGui::ImageButton(std::to_string(textureIndex).c_str(), textureID,
+                 ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1))) {
+                switch (textureIndex) {
+                case 0:
+                    Math::setCurrentShape(Math::ShapeType::Rectangle);
+                    break;
+                case 1:
+                    Math::setCurrentShape(Math::ShapeType::Triangle);
+                    break;
+                case 2:
+                    Math::setCurrentShape(Math::ShapeType::Circle);
+                    break;
+                case 3:
+                    Math::setCurrentShape(Math::ShapeType::Ellipse);
+                    break;
+                case 4:
+                    Math::setCurrentShape(Math::ShapeType::Line);
+                    break;
+                case 5:
+                    Math::setCurrentShape(Math::ShapeType::LetterA);
+                    break;
+                    default:
+                        break;
+                }
+                 }
 
             // Add hover effect
             if (ImGui::IsItemHovered()) {
@@ -133,6 +157,7 @@ void UI::render(sf::RenderWindow& window) {
     window.draw(titleTextContainer);
     window.draw(titleText);
     drawCartesianGraph(window);
+    Math::render(window);
 }
 
 void UI::drawCartesianGraph(sf::RenderWindow& window) {
