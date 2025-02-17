@@ -39,6 +39,8 @@ public:
 
     static sf::Vector2f windowToGraph(sf::Vector2f windowCoord);
     static sf::Vector2f graphToWindow(sf::Vector2f graphCoord);
+    static sf::Vector2f windowDistanceToGraph(sf::Vector2f windowDistance);
+    static sf::Vector2f graphDistanceToWindow(sf::Vector2f graphDistance);
 
     static const sf::Vector2f& getOrigin() { return origin; } // Add getter
 };

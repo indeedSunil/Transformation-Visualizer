@@ -47,6 +47,7 @@ bool UI::initialize(sf::RenderWindow& window)
         dividerLinePositionX + (windowSize.x - dividerLinePositionX) / 2,
         windowSize.y / 2
     );
+    // std::cout << "Origin: " << origin.x << ", " << origin.y << std::endl;
     textureInit(); // Load all textures during initialization
     return ImGui::SFML::Init(window);
 }
@@ -310,6 +311,7 @@ void UI::render(sf::RenderWindow& window)
 
             // Static variables to store the rotation values
             static float rotateAngle = 0.0f;
+            static sf::Vector2f pivot = {0.0f, 0.0f};
 
             // Rotation Angle
             ImGui::Text("Rotation Angle:");
@@ -326,6 +328,24 @@ void UI::render(sf::RenderWindow& window)
                 rotateAngle = std::max(-180.0f, std::min(rotateAngle, 180.0f));
                 std::cout << "Rotation Angle changed via input: " << rotateAngle << std::endl;
             }
+
+            // Pivot
+            ImGui::Text("Pivot:");
+            if (ImGui::InputFloat("##X", &pivot.x, 1.0f, 10.0f, "%.1f"))
+            {
+                // Clamp the input value between -180 and 180
+                pivot.x = std::max(-180.0f, std::min(pivot.x, 180.0f));
+                std::cout << "Pivot point changed via input: " << pivot.x << std::endl;
+            }
+
+            ImGui::SameLine();
+            if (ImGui::InputFloat("##Y", &pivot.y, 1.0f, 10.0f, "%.1f"))
+            {
+                // Clamp the input value between -180 and 180
+                pivot.y = std::max(-180.0f, std::min(pivot.y, 180.0f));
+                std::cout << "Pivot point changed via input: " << pivot.y << std::endl;
+            }
+
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
@@ -333,7 +353,7 @@ void UI::render(sf::RenderWindow& window)
             if (ImGui::Button("Apply Rotate"))
             {
                 Shapes::isSelected = true;
-                Transformation::rotate(Shapes::rectangle, rotateAngle);
+                Transformation::rotate(Shapes::rectangle, rotateAngle, pivot);
             }
         }
         ImGui::End();
@@ -541,24 +561,27 @@ void UI::render(sf::RenderWindow& window)
                 switch (textureIndex)
                 {
                 case 0:
-                    {
-                        Renderer::hasShape = false;
-                        Renderer::setCurrentShape(Renderer::ShapeType::Rectangle);
-                        break;
-                    }
+                    Renderer::hasShape = false;
+                    Renderer::setCurrentShape(Renderer::ShapeType::Rectangle);
+                    break;
                 case 1:
+                    Renderer::hasShape = false;
                     Renderer::setCurrentShape(Renderer::ShapeType::Triangle);
                     break;
                 case 2:
+                    Renderer::hasShape = false;
                     Renderer::setCurrentShape(Renderer::ShapeType::Circle);
                     break;
                 case 3:
+                    Renderer::hasShape = false;
                     Renderer::setCurrentShape(Renderer::ShapeType::Ellipse);
                     break;
                 case 4:
+                    Renderer::hasShape = false;
                     Renderer::setCurrentShape(Renderer::ShapeType::Line);
                     break;
                 case 5:
+                    Renderer::hasShape = false;
                     Renderer::setCurrentShape(Renderer::ShapeType::LetterA);
                     break;
                 default:
@@ -660,14 +683,17 @@ void UI::drawCartesianGraph(sf::RenderWindow& window)
 }
 
 // Utility functions for coordinate conversion
+// Window coordinates to graph coordinates
 sf::Vector2f UI::windowToGraph(const sf::Vector2f windowCoord)
 {
+    // std::cout << "Grid size: " << GRID_SIZE << std::endl;
     return sf::Vector2f(
         (windowCoord.x - origin.x) / GRID_SIZE,
         (origin.y - windowCoord.y) / GRID_SIZE
     );
 }
 
+// Graph coordinates to window coordinates
 sf::Vector2f UI::graphToWindow(sf::Vector2f graphCoord)
 {
     return sf::Vector2f(
@@ -675,6 +701,25 @@ sf::Vector2f UI::graphToWindow(sf::Vector2f graphCoord)
         origin.y - graphCoord.y * GRID_SIZE
     );
 }
+
+// Distance from window units (pixels) to graph units.
+sf::Vector2f UI::windowDistanceToGraph(const sf::Vector2f windowDistance)
+{
+    return sf::Vector2f(
+        windowDistance.x / GRID_SIZE,
+        windowDistance.y / GRID_SIZE
+    );
+}
+
+// Distance from graph units to window units (pixels).
+sf::Vector2f UI::graphDistanceToWindow(const sf::Vector2f graphDistance)
+{
+    return sf::Vector2f(
+        graphDistance.x * GRID_SIZE,
+        graphDistance.y * GRID_SIZE
+    );
+}
+
 
 void UI::shutdown()
 {

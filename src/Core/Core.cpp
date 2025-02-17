@@ -3,6 +3,12 @@
 sf::Font Core::font;
 
 Core::Core() : window(sf::VideoMode(sf::VideoMode::getDesktopMode()), "Transformation Visualizer") {
+    sf::View view;
+    const auto windowSize = static_cast<sf::Vector2f>(window.getSize());
+    view.setCenter({-windowSize.x / 256, 0}); // Center horizontally and vertically
+    view.setSize({windowSize.x / 20, -windowSize.y / 20}); // Invert Y-axis and apply scale
+    window.setView(view);
+
     window.setFramerateLimit(60);
     if (!UI::initialize(window)) {
         throw std::runtime_error("Failed to initialize ImGui-SFML");

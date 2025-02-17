@@ -40,20 +40,45 @@ void Shapes::updateShape()
         }
     case ShapeType::Circle:
         {
-            float radius = std::sqrt(
-                std::pow(currentPos.x - startPos.x, 2) +
-                std::pow(currentPos.y - startPos.y, 2)
+            // Convert positions to window coordinates first
+            sf::Vector2f windowStartPos = UI::graphToWindow(startPos);
+            sf::Vector2f windowCurrentPos = UI::graphToWindow(currentPos);
+
+            // Calculate radius in window coordinates
+            const float radius = std::sqrt(
+                static_cast<float>(std::pow(windowCurrentPos.x - windowStartPos.x, 2)) +
+                static_cast<float>(std::pow(windowCurrentPos.y - windowStartPos.y, 2))
             );
+
             circle.setRadius(radius);
-            circle.setPosition(UI::graphToWindow(startPos));
+            circle.setPosition(windowStartPos);
             break;
         }
     case ShapeType::Triangle:
         {
+            // Convert positions to window coordinates first
+            sf::Vector2f windowStartPos = UI::graphToWindow(startPos);
+            sf::Vector2f windowCurrentPos = UI::graphToWindow(currentPos);
+
+            // Calculate the midpoint for the second point (instead of using currentPos.x directly)
+            sf::Vector2f midPoint = sf::Vector2f(
+                windowStartPos.x + (windowCurrentPos.x - windowStartPos.x) / 2.0f,
+                windowStartPos.y
+            );
+
             triangle.setPointCount(3);
-            triangle.setPoint(0, UI::graphToWindow(startPos));
-            triangle.setPoint(1, UI::graphToWindow(sf::Vector2f(currentPos.x, startPos.y)));
-            triangle.setPoint(2, UI::graphToWindow(currentPos));
+            triangle.setPoint(0, windowStartPos);                    // Left point
+            triangle.setPoint(1, midPoint);                         // Top point
+            triangle.setPoint(2, windowCurrentPos);                 // Right point
+
+            // Ensure the triangle stays within window bounds
+            sf::FloatRect bounds = triangle.getGlobalBounds();
+            if (bounds.position.x + bounds.size.x > UI::windowSize.x) {
+                // Adjust currentPos to keep triangle within window
+                float scale = (UI::windowSize.x - bounds.position.x) / bounds.size.x;
+                windowCurrentPos.x = windowStartPos.x + (windowCurrentPos.x - windowStartPos.x) * scale;
+                triangle.setPoint(2, windowCurrentPos);
+            }
             break;
         }
     case ShapeType::Line:
