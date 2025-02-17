@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "../Math/Math.hpp"
+#include "../Renderer/Renderer.hpp"
 #include "Core/Core.hpp"
 
 class Shapes
@@ -56,7 +56,7 @@ public:
     static void clearShape()
     {
         isDrawing = false;
-        Math::hasShape = false;
+        Renderer::hasShape = false;
         rectangle = sf::RectangleShape();
         coordinatesText.setString("");
     }

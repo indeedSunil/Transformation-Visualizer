@@ -5,7 +5,7 @@
 #include "imgui-SFML.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <Core/Core.hpp>
-#include <Math/Math.hpp>
+#include <Renderer/Renderer.hpp>
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include <SFML/Graphics/Texture.hpp>

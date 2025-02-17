@@ -542,24 +542,24 @@ void UI::render(sf::RenderWindow& window)
                 {
                 case 0:
                     {
-                        Math::hasShape = false;
-                        Math::setCurrentShape(Math::ShapeType::Rectangle);
+                        Renderer::hasShape = false;
+                        Renderer::setCurrentShape(Renderer::ShapeType::Rectangle);
                         break;
                     }
                 case 1:
-                    Math::setCurrentShape(Math::ShapeType::Triangle);
+                    Renderer::setCurrentShape(Renderer::ShapeType::Triangle);
                     break;
                 case 2:
-                    Math::setCurrentShape(Math::ShapeType::Circle);
+                    Renderer::setCurrentShape(Renderer::ShapeType::Circle);
                     break;
                 case 3:
-                    Math::setCurrentShape(Math::ShapeType::Ellipse);
+                    Renderer::setCurrentShape(Renderer::ShapeType::Ellipse);
                     break;
                 case 4:
-                    Math::setCurrentShape(Math::ShapeType::Line);
+                    Renderer::setCurrentShape(Renderer::ShapeType::Line);
                     break;
                 case 5:
-                    Math::setCurrentShape(Math::ShapeType::LetterA);
+                    Renderer::setCurrentShape(Renderer::ShapeType::LetterA);
                     break;
                 default:
                     break;
@@ -614,7 +614,7 @@ void UI::render(sf::RenderWindow& window)
     window.draw(titleTextContainer);
     window.draw(titleText);
     drawCartesianGraph(window);
-    Math::render(window);
+    Renderer::render(window);
 }
 
 void UI::drawCartesianGraph(sf::RenderWindow& window)

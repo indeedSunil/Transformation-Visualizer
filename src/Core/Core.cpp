@@ -34,6 +34,6 @@ void Core::processEvents() {
         if (event->is<sf::Event::Closed>()) {
             window.close();
         }
-        Math::handleMouseEvent(event.value(),window);
+        Renderer::handleMouseEvent(event.value(),window);
     }
 }

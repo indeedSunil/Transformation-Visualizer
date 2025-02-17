@@ -1,4 +1,4 @@
-#include "Math.hpp"
+#include "Renderer.hpp"
 #include "Shapes/Shapes.hpp"
 #include <iomanip>
 #include "UI/UI.hpp"
@@ -6,20 +6,20 @@
 
 
 // Static members initialization
-Math::ShapeType Math::currentShape = ShapeType::None;
-bool Math::isDrawing = false;
-sf::Vector2f Math::startPos;
-sf::Vector2f Math::currentPos;
-bool Math::hasShape = false;
+Renderer::ShapeType Renderer::currentShape = ShapeType::None;
+bool Renderer::isDrawing = false;
+sf::Vector2f Renderer::startPos;
+sf::Vector2f Renderer::currentPos;
+bool Renderer::hasShape = false;
 
-void Math::setCurrentShape(const ShapeType shape)
+void Renderer::setCurrentShape(const ShapeType shape)
 {
     currentShape = shape;
     Shapes::setCurrentShape(static_cast<Shapes::ShapeType>(shape));
     isDrawing = false;
 }
 
-void Math::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window)
+void Renderer::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window)
 {
     sf::Vector2f mousePos;
     if (event.getIf<sf::Event::MouseButtonPressed>() && isButtonPressed(sf::Mouse::Button::Left))
@@ -80,7 +80,7 @@ void Math::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window)
     }
 }
 
-void Math::render(sf::RenderWindow& window)
+void Renderer::render(sf::RenderWindow& window)
 {
     if (hasShape || Shapes::isDrawing)
     {
@@ -89,7 +89,7 @@ void Math::render(sf::RenderWindow& window)
     }
 }
 
-void Math::initializeShape(sf::RenderWindow& window)
+void Renderer::initializeShape(sf::RenderWindow& window)
 {
     switch (currentShape)
     {
@@ -114,7 +114,7 @@ void Math::initializeShape(sf::RenderWindow& window)
     }
 }
 
-void Math::finishDrawing(sf::RenderWindow& window)
+void Renderer::finishDrawing(sf::RenderWindow& window)
 {
     switch (currentShape)
     {
@@ -130,7 +130,7 @@ void Math::finishDrawing(sf::RenderWindow& window)
     }
 }
 
-void Math::displayCoordinates(sf::RenderWindow& window)
+void Renderer::displayCoordinates(sf::RenderWindow& window)
 {
     sf::Vector2f position = Shapes::getShapePosition();
     sf::Vector2f size;

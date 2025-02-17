@@ -1,7 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-class Math {
+class Renderer {
 public:
     enum class ShapeType {
         None,
