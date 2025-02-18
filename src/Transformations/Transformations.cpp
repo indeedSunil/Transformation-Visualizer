@@ -2,25 +2,42 @@
 #include <cmath>
 #include <iostream>
 
-// ---------------------- SCALE -------------------------
 
-// Rectangle: simply scale the size.
-void Transformation::scale(sf::RectangleShape& shape, const sf::Vector2f scaleFactor) {
-    const sf::Vector2f currentSizeWindow = UI::windowDistanceToGraph(shape.getSize()); // Size wrt window units
+void Transformation::scale(sf::RectangleShape& shape, const sf::Vector2f scaleFactor)
+{
+    // Get current size and position
+    sf::Vector2f currentSize = shape.getSize();
+    sf::Vector2f currentPos = shape.getPosition();
 
-    // const sf::Vector2f currentSizeGraph = UI::windowDistanceToGraph(currentSizeWindow); // Size wrt graph units
+    // Calculate current center point
+    sf::Vector2f center = {
+        currentPos.x + (currentSize.x / 2.0f),
+        currentPos.y + (currentSize.y / 2.0f)
+    };
 
-    // const sf::Vector2f newSizeGraph = { currentSizeGraph.x * scaleFactor.x, currentSizeGraph.y * scaleFactor.y }; // Scaling
+    // Calculate new size
+    sf::Vector2f newSize = {
+        currentSize.x * scaleFactor.x,
+        currentSize.y * scaleFactor.y
+    };
 
-    // const sf::Vector2f newSizeWindow = UI::graphDistanceToWindow(newSizeGraph); // Back to window units
+    // Round the new size to ensure it aligns with grid
+    newSize.x = std::ceil(newSize.x);
+    newSize.y = std::ceil(newSize.y);
 
-    const sf::Vector2f position = UI::windowToGraph(shape.getPosition());
+    // Calculate new position to maintain center point
+    sf::Vector2f newPos = {
+        center.x - (newSize.x / 2.0f),
+        center.y - (newSize.y / 2.0f)
+    };
 
-    const sf::Vector2f shapeCenter = (position + currentSizeWindow) / 2.f;
-    shape.move({-shapeCenter.x, -shapeCenter.y});
+    // Snap new position to grid
+    newPos.x = std::floor(newPos.x);
+    newPos.y = std::floor(newPos.y);
 
-    shape.setSize({currentSizeWindow.x * scaleFactor.x, currentSizeWindow.y * scaleFactor.y});
-    shape.move(shapeCenter);
+    // Update the shape
+    shape.setSize(newSize);
+    shape.setPosition(newPos);
 }
 
 // Circle: assume a uniform scale factor. If scaleFactor.x and scaleFactor.y differ, choose one (or average).
@@ -54,48 +71,60 @@ void Transformation::scale(sf::ConvexShape& shape, sf::Vector2f scaleFactor) {
 
 // Use the built-in move() function which is available in all Transformable classes.
 void Transformation::translate(sf::RectangleShape& shape, sf::Vector2f translationFactor) {
-    const sf::Vector2f windowTranslation = UI::graphToWindow(translationFactor) - UI::graphToWindow({0, 0}); // window to graph conversion
-    shape.move(windowTranslation);
+    shape.move(translationFactor);
 }
 
 void Transformation::translate(sf::CircleShape& shape, sf::Vector2f translationFactor) {
-    const sf::Vector2f windowTranslation = UI::graphToWindow(translationFactor) - UI::graphToWindow({0, 0}); // window to graph conversion
-    shape.move(windowTranslation);
+    shape.move(translationFactor);
 }
 
 void Transformation::translate(sf::ConvexShape& shape, sf::Vector2f translationFactor) {
-    const sf::Vector2f windowTranslation = UI::graphToWindow(translationFactor) - UI::graphToWindow({0, 0}); // window to graph conversion
-    shape.move(windowTranslation);
+    shape.move(translationFactor);
 }
 
-// ---------------------- ROTATE -------------------------
 
 // For rotation, we first set the origin to the center (if not already set) then rotate.
-void Transformation::rotate(sf::RectangleShape& shape, const float angle, const sf::Vector2f pivot) {
-    const sf::Vector2f originalOrigin = shape.getOrigin();
-    const sf::Vector2f originalPosition = shape.getPosition();
+void Transformation::rotate(sf::RectangleShape& shape, const float angle, const sf::Vector2f pivot)
+{
+    // Get current position
+    sf::Vector2f currentPos = shape.getPosition();
 
-    // Convert pivot to window coordinates
-    const sf::Vector2f pivotAccToGraph = UI::graphToWindow(pivot);
-    std::cout << "pivotAccToGraph: " << pivotAccToGraph.x << ", " << pivotAccToGraph.y << std::endl;
+    // Determine rotation pivot:
+    // If pivot is (0,0), rotate around coordinate system origin
+    // Otherwise, rotate around the specified pivot point
+    sf::Vector2f rotationPivot = pivot;
 
-    // Calculate vector from pivot to shape's top-left corner
-    const sf::Vector2f relativePos = -shape.getOrigin() + pivotAccToGraph;
-    std::cout << "relativePos: " << relativePos.x << ", " << relativePos.y << std::endl;
-    // Set the origin relative to the shape's local coordinate system
-    shape.setOrigin({0,0});
+    // Calculate relative rotation
+    sf::Angle currentRotation = shape.getRotation();
+    sf::Angle newRotation = currentRotation + sf::degrees(angle);
 
-    // Set the shape's position to the pivot point
-    // shape.setPosition(pivotAccToGraph);
+    if (pivot.x == 0 && pivot.y == 0) {
+        // For origin rotation, we just need to set the new rotation
+        // and the shape will rotate around (0,0)
+        shape.setRotation(newRotation);
+    } else {
+        // For rotation around a specific pivot point:
+        // 1. Get the current position relative to pivot
+        sf::Vector2f relativePos = currentPos - rotationPivot;
 
-    // Perform the rotation
-    shape.rotate(sf::degrees(angle));
+        // 2. Set the new rotation
+        shape.setRotation(newRotation);
 
-    // Reset the origin and adjust position to maintain the same world position
-    shape.setOrigin(originalOrigin);
-    // shape.setPosition(originalPosition);
+        // 3. Calculate the new position after rotation
+        float angleInRadians = newRotation.asRadians();
+        sf::Vector2f newPos = {
+            rotationPivot.x + (relativePos.x * std::cos(angleInRadians) - relativePos.y * std::sin(angleInRadians)),
+            rotationPivot.y + (relativePos.x * std::sin(angleInRadians) + relativePos.y * std::cos(angleInRadians))
+        };
+
+        // 4. Snap to grid
+        newPos.x = std::floor(newPos.x);
+        newPos.y = std::floor(newPos.y);
+
+        // 5. Update position
+        shape.setPosition(newPos);
+    }
 }
-
 
 void Transformation::rotate(sf::CircleShape& shape, float angle, sf::Vector2f pivot) {
     float radius = shape.getRadius();

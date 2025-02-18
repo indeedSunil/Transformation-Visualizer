@@ -32,10 +32,10 @@ void Shapes::updateShape()
     {
     case ShapeType::Rectangle:
         {
-            const sf::Vector2f size = UI::graphToWindow(currentPos) - UI::graphToWindow(startPos);
+            const sf::Vector2f size = currentPos - startPos;
             rectangle.setSize(sf::Vector2f(std::abs(size.x), std::abs(size.y)));
-            if (size.x < 0) rectangle.setPosition(UI::graphToWindow(sf::Vector2f(currentPos.x, startPos.y)));
-            if (size.y < 0) rectangle.setPosition(UI::graphToWindow(sf::Vector2f(startPos.x, currentPos.y)));
+            if (size.x < 0) rectangle.setPosition(sf::Vector2f(currentPos.x, startPos.y));
+            if (size.y < 0) rectangle.setPosition(sf::Vector2f(startPos.x, currentPos.y));
             break;
         }
     case ShapeType::Circle:
@@ -99,6 +99,7 @@ void Shapes::updateShape()
 
 void Shapes::drawShape(sf::RenderWindow& window)
 {
+    window.setView(Core::getGraphView());
     switch (currentShape)
     {
     case ShapeType::Rectangle:
@@ -120,11 +121,6 @@ void Shapes::drawShape(sf::RenderWindow& window)
         break;
     }
 
-    // Draw coordinates if shape is selected
-    if (isSelected)
-    {
-        // drawCoordinates(window);
-    }
 }
 
 void Shapes::handleShapeSelection(const sf::Vector2f& mousePos)
@@ -151,12 +147,12 @@ void Shapes::handleShapeSelection(const sf::Vector2f& mousePos)
     if (isShapeClicked(mousePos, bounds))
     {
         isSelected = true;
-        setShapeOutlineColor(sf::Color::Yellow);
+        setShapeOutlineColor(sf::Color::Green);
     }
     else
     {
         isSelected = false;
-        setShapeOutlineColor(sf::Color::White);
+        setShapeOutlineColor(sf::Color::Black);
     }
 }
 
@@ -192,22 +188,15 @@ void Shapes::handleDragging(const sf::Vector2f& mousePos)
 {
     if (!isSelected || !isDragging) return;
 
+    // Calculate new position
     sf::Vector2f newPos = mousePos - dragOffset;
 
-    // Snap to grid
-    float gridSize = static_cast<float>(UI::GRID_SIZE);
-    newPos.x = std::round(newPos.x / gridSize) * gridSize;
-    newPos.y = std::round(newPos.y / gridSize) * gridSize;
-
-    // Apply boundaries
-    newPos.x = std::max(newPos.x, UI::dividerLinePositionX);
-    newPos.x = std::min(newPos.x, static_cast<float>(UI::windowSize.x) - getShapeSize().x);
-    newPos.y = std::max(newPos.y, 0.0f);
-    newPos.y = std::min(newPos.y, static_cast<float>(UI::windowSize.y) - getShapeSize().y);
+    // Snap the new position to grid points
+    newPos.x = std::floor(newPos.x);
+    newPos.y = std::floor(newPos.y);
 
     setShapePosition(newPos);
 }
-
 // Helper functions
 
 void Shapes::setShapePosition(const sf::Vector2f& position)
@@ -275,28 +264,3 @@ sf::Vector2f Shapes::getShapePosition()
         return sf::Vector2f(0, 0);
     }
 }
-
-// void Shapes::drawCoordinates(sf::RenderWindow& window)
-// {
-//     sf::Vector2f position = getShapePosition();
-//     sf::Vector2f size;
-//
-//     const sf::Vector2f A = UI::windowToGraph(position);
-//     const sf::Vector2f B = UI::windowToGraph({position.x + size.x, position.y});
-//     const sf::Vector2f C = UI::windowToGraph({position.x + size.x, position.y + size.y});
-//     const sf::Vector2f D = UI::windowToGraph({position.x, position.y + size.y});
-//
-//     std::ostringstream oss;
-//     oss << std::fixed << std::setprecision(2);
-//     oss << "Co-ordinates of Shape:\n";
-//     oss << "A: " << A.x << ", " << A.y << "\n";
-//     oss << "B: " << B.x << ", " << B.y << "\n";
-//     oss << "C: " << C.x << ", " << C.y << "\n";
-//     oss << "D: " << D.x << ", " << D.y;
-//
-//     coordinatesText.setString(oss.str());
-//     coordinatesText.setPosition({50.f, 850.f});
-//     coordinatesText.setCharacterSize(20);
-//     coordinatesText.setFillColor(sf::Color::White);
-//     window.draw(coordinatesText);
-// }

@@ -54,6 +54,12 @@ bool UI::initialize(sf::RenderWindow& window)
 
 void UI::render(sf::RenderWindow& window)
 {
+    window.setView(Core::getUIView());
+    sf::RectangleShape uiBackground({Core::getPanelWidth(), Core::getWindowSize().y});
+    uiBackground.setFillColor(sf::Color::Black);
+    uiBackground.setPosition({0, 0});
+    window.draw(uiBackground);
+
     // Buttons to add shape or clear canvas
     ImGui::SetNextWindowPos(ImVec2(30, 100), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(200, 130));
@@ -558,9 +564,11 @@ void UI::render(sf::RenderWindow& window)
                                    ImVec2(cellWidth, cellHeight), ImVec2(0, 0), ImVec2(1, 1)))
             {
                 selectedTextureIndex = textureIndex; // Update selected index
+                window.setView(Core::getGraphView());
                 switch (textureIndex)
                 {
                 case 0:
+                    std::cout << "Selected Texture: " << textureIndex << std::endl;
                     Renderer::hasShape = false;
                     Renderer::setCurrentShape(Renderer::ShapeType::Rectangle);
                     break;
@@ -613,72 +621,72 @@ void UI::render(sf::RenderWindow& window)
 
     ImGui::End();
 
-
-    // Divider line
-    sf::RectangleShape dividerLine({1.f, static_cast<float>(windowSize.y)});
-    dividerLine.setPosition({dividerLinePositionX, 0.f});
-
-    // Title text container
-    sf::RectangleShape titleTextContainer({460.f, 40.f});
-    titleTextContainer.setPosition({(dividerLinePositionX - titleTextContainer.getLocalBounds().size.x) / 2.f, 20.f});
-    titleTextContainer.setFillColor(sf::Color(255, 255, 255, 0));
-    titleTextContainer.setOutlineThickness(2.f);
-    titleTextContainer.setOutlineColor(sf::Color::Green);
-    titleTextContainer.setOutlineColor(sf::Color(250, 150, 100));
-
-    // Title text
+    // View begins here
     sf::Text titleText(Core::font);
     titleText.setString("Transformation Visualizer");
-    titleText.setCharacterSize(24);
-    titleText.setPosition({(dividerLinePositionX - titleText.getLocalBounds().size.x) / 2, 25.f});
+    titleText.setCharacterSize(20);
     titleText.setFillColor(sf::Color::White);
-
-    window.draw(dividerLine);
-    window.draw(titleTextContainer);
+    titleText.setPosition({(Core::getPanelWidth() - titleText.getLocalBounds().size.x)/2, 10});
     window.draw(titleText);
+
     drawCartesianGraph(window);
     Renderer::render(window);
 }
 
 void UI::drawCartesianGraph(sf::RenderWindow& window)
 {
-    // Calculate the graph area (right side of the divider)
-    const float graphWidth = static_cast<float>(windowSize.x) - dividerLinePositionX;
-    const auto graphHeight = static_cast<float>(windowSize.y);
+    window.setView(Core::getGraphView());
+    const auto graphSize = Core::getGraphSize();
+    const float SCALE = Core::getScale();
 
-    // Draw grid lines
-    const int numLinesX = static_cast<int>(graphWidth) / GRID_SIZE;
-    const int numLinesY = static_cast<int>(graphHeight) / GRID_SIZE;
+    // Calculate view dimensions
+    const float VIEW_WIDTH = graphSize.x / SCALE;
+    const float VIEW_HEIGHT = graphSize.y / SCALE;
+    constexpr float GRID_THICKNESS = 0.05f;
+    constexpr float AXIS_THICKNESS = 0.05f;
+    constexpr float GRID_INTERVAL = 1.f;
 
-    // Vertical grid lines
-    for (int i = -numLinesX / 2; i <= numLinesX / 2; i++)
+    const int horizontalLines = static_cast<int>((VIEW_HEIGHT * 2) / GRID_INTERVAL);
+    const int verticalLines = static_cast<int>((VIEW_WIDTH * 2) / GRID_INTERVAL);
+
+    // Draw vertical grid lines
+    for (int i = -verticalLines/2; i <= verticalLines/2; i++)
     {
-        sf::RectangleShape line(sf::Vector2f(GRID_LINE_THICKNESS, graphHeight));
-        line.setPosition({origin.x + static_cast<float>(i * GRID_SIZE), 0});
-        line.setFillColor(sf::Color(50, 50, 50));
+        if(i == 0) continue; // Skip center line as it will be drawn as axis
+        float x = i * GRID_INTERVAL;
+
+        sf::RectangleShape line({GRID_THICKNESS, VIEW_HEIGHT * 2.f});
+        line.setOrigin({GRID_THICKNESS/2.f, VIEW_HEIGHT});
+        line.setPosition({x, 0.f});
+        line.setFillColor(sf::Color(200, 200, 200));
         window.draw(line);
     }
 
-    // Horizontal grid lines
-    for (int i = -numLinesY / 2; i <= numLinesY / 2; i++)
+    // Draw horizontal grid lines
+    for (int i = -horizontalLines/2; i <= horizontalLines/2; i++)
     {
-        sf::RectangleShape line(sf::Vector2f(graphWidth, GRID_LINE_THICKNESS));
-        line.setPosition({dividerLinePositionX, (origin.y + static_cast<float>(i) * GRID_SIZE)});
-        line.setFillColor(sf::Color(50, 50, 50));
+        if(i == 0) continue; // Skip center line as it will be drawn as axis
+        float y = i * GRID_INTERVAL;
+
+        sf::RectangleShape line({VIEW_WIDTH * 2.f, GRID_THICKNESS});
+        line.setOrigin({VIEW_WIDTH, GRID_THICKNESS/2.f});
+        line.setPosition({0.f, y});
+        line.setFillColor(sf::Color(200, 200, 200));
         window.draw(line);
     }
 
-    // Draw axes
-    // X-axis
-    sf::RectangleShape xAxis(sf::Vector2f(graphWidth, AXIS_THICKNESS));
-    xAxis.setPosition({dividerLinePositionX, origin.y});
-    xAxis.setFillColor(sf::Color(255, 255, 255, 30));
+    // Draw X-axis
+    sf::RectangleShape xAxis({VIEW_WIDTH * 2.f, AXIS_THICKNESS});
+    xAxis.setOrigin({VIEW_WIDTH, AXIS_THICKNESS/2.f});
+    xAxis.setPosition({0.f, 0.f});
+    xAxis.setFillColor(sf::Color::Black);
     window.draw(xAxis);
 
-    // Y-axis
-    sf::RectangleShape yAxis(sf::Vector2f(AXIS_THICKNESS, graphHeight));
-    yAxis.setPosition({origin.x, 0});
-    yAxis.setFillColor(sf::Color(255, 255, 255, 30));
+    // Draw Y-axis
+    sf::RectangleShape yAxis({AXIS_THICKNESS, VIEW_HEIGHT * 2.f});
+    yAxis.setOrigin({AXIS_THICKNESS/2.f, VIEW_HEIGHT});
+    yAxis.setPosition({0.f, 0.f});
+    yAxis.setFillColor(sf::Color::Black);
     window.draw(yAxis);
 }
 
