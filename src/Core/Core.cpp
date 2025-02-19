@@ -9,7 +9,7 @@ sf::Vector2f Core::graphSize;
 float Core::leftPanelWidth;
 const float Core::SCALE = 20.f;
 
-Core::Core() : window(sf::VideoMode(sf::VideoMode::getDesktopMode()), "Transformation Visualizer")
+Core::Core() : window(sf::VideoMode(sf::VideoMode::getDesktopMode()), "Transformation Visualizer", sf::Style::Close, sf::State::Windowed)
 {
     windowSize = static_cast<sf::Vector2f>(window.getSize());
 

@@ -9,24 +9,18 @@ public:
     enum class ShapeType // ShapeTypes
     {
         None,
-        Rectangle,
-        Triangle,
-        Circle,
-        Ellipse,
-        Line,
-        LetterA,
-        CustomRectangle
+        CustomRectangle,
+        CustomTriangle,
+        CustomCircle,
+        CustomLine,
+        CustomEllipse,
     };
 
-    // Shapes
-    static sf::RectangleShape rectangle;
-    static sf::CircleShape circle;
-    static sf::ConvexShape triangle;
-    static sf::RectangleShape line;
-    static sf::Text letterA;
-
-    // CustomShapes
+    // Custom shape
     static sf::ConvexShape CustomShape;
+
+    // Number of points for a cirlc
+    static constexpr int CIRCLE_POINTS = 32;  // More points = smoother circle
 
     // For displaying co-ordinates of the shape
     static sf::Text coordinatesText;
@@ -50,9 +44,8 @@ public:
     static sf::Vector2f getShapeCenter();
     static void handleDragging(const sf::Vector2f& mousePos);
     static void setShapePosition(const sf::Vector2f& position);
-    static sf::Vector2f getShapeSize();
     static sf::Vector2f getShapePosition();
-    // static void drawCoordinates(sf::RenderWindow& window);
+
     static sf::Vector2f currentPos; // Current position of the mouse
     static sf::Vector2f startPos; // Position of the mouse when dragging started
 
@@ -64,13 +57,6 @@ private:
 
     static void setShapeOutlineColor(const sf::Color& color)
     {
-        switch (currentShape)
-        {
-        case ShapeType::CustomRectangle:
             CustomShape.setOutlineColor(color);
-            break;
-        default:
-            break;
-        }
     }
 };

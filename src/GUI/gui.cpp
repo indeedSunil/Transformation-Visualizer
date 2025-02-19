@@ -562,23 +562,22 @@ void GUI::initGui(sf::RenderWindow& window)
                     break;
                 case 1:
                     Renderer::hasShape = false;
-                    Renderer::setCurrentShape(Renderer::ShapeType::Triangle);
+                    Renderer::setCurrentShape(Renderer::ShapeType::CustomTriangle);
                     break;
                 case 2:
                     Renderer::hasShape = false;
-                    Renderer::setCurrentShape(Renderer::ShapeType::Circle);
+                    Renderer::setCurrentShape(Renderer::ShapeType::CustomCircle);
                     break;
                 case 3:
                     Renderer::hasShape = false;
-                    Renderer::setCurrentShape(Renderer::ShapeType::Ellipse);
                     break;
                 case 4:
+                    std::cout << "Line option clicked!" << std::endl;
                     Renderer::hasShape = false;
-                    Renderer::setCurrentShape(Renderer::ShapeType::Line);
+                    Renderer::setCurrentShape(Renderer::ShapeType::CustomLine);
                     break;
                 case 5:
                     Renderer::hasShape = false;
-                    Renderer::setCurrentShape(Renderer::ShapeType::LetterA);
                     break;
                 default:
                     break;
