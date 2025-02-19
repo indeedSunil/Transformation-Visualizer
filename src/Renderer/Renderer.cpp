@@ -208,20 +208,7 @@ void Renderer::displayCoordinates(sf::RenderWindow& window)
         }
     case ShapeType::Circle:
         {
-            float radiusWindow = Shapes::circle.getRadius();
-            const float radiusGraph = UI::windowDistanceToGraph({radiusWindow, radiusWindow}).x;
-
-            // Get the top-left position of the circle's bounding box in window units.
-            const sf::Vector2f topLeft = Shapes::circle.getPosition();
-            // Center in window units by adding the radius.
-            const sf::Vector2f centerWindow = {topLeft.x + radiusWindow, topLeft.y + radiusWindow};
-            // Convert the center position from window to graph coordinates.
-            const sf::Vector2f centerGraph = UI::windowToGraph(centerWindow);
-
-            oss << "Co-ordinates of Circle:\n";
-            oss << "Center: " << centerGraph.x << ", " << centerGraph.y << "\n";
-            oss << "Radius: " << radiusGraph;
-            break;
+           break;
         }
 
 

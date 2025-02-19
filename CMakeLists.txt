@@ -24,7 +24,9 @@ add_executable(${PROJECT_NAME} ${SOURCES}
         src/Transformations/Transformations.hpp
         src/Transformations/Transformations.cpp
         src/Shapes/Shapes.cpp
-        src/Shapes/Shapes.hpp)
+        src/Shapes/Shapes.hpp
+        src/GUI/gui.h
+        src/GUI/gui.cpp)
 
 
 
