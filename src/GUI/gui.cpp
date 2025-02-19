@@ -126,12 +126,12 @@ void GUI::initGui(sf::RenderWindow& window)
     {
         showTransformationWindow = true; // Set to true when button is clicked
         fromWhereItCame = 1;
+        std::cout << "Scale Clicked!" << std::endl;
     }
     if (ImGui::Button("Translate"))
     {
         showTransformationWindow = true; // Set to true when button is clicked
         fromWhereItCame = 2;
-        std::cout << "Option 2 Clicked!" << std::endl;
         std::cout << "Translate clicked" << std::endl;
     }
     if (ImGui::Button("Rotate"))
@@ -156,6 +156,8 @@ void GUI::initGui(sf::RenderWindow& window)
         std::cout << "Shear clicked" << std::endl;
     }
     ImGui::End();
+
+
     //transformations window-scaling window
     if (showTransformationWindow)
     {
@@ -163,6 +165,7 @@ void GUI::initGui(sf::RenderWindow& window)
         {
         case 1:
             {
+                std::cout<< "Scale Window"<<std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Set fixed size
 
@@ -216,12 +219,14 @@ void GUI::initGui(sf::RenderWindow& window)
                     }
                 }
                 ImGui::End();
+                break;
             }
 
 
             //transformations window-translation window
         case 2:
             {
+                std::cout << "Translate Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -276,11 +281,13 @@ void GUI::initGui(sf::RenderWindow& window)
                     }
                 }
                 ImGui::End();
+                break;
             }
 
             //transformations window-rotation window
         case 3:
             {
+                std::cout << "Rotate Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -338,11 +345,13 @@ void GUI::initGui(sf::RenderWindow& window)
                     }
                 }
                 ImGui::End();
+                break;
             }
 
             //transformations window-reflection window
         case 4:
             {
+                std::cout << "Reflect Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always);
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Increased size to accommodate more options
 
@@ -439,12 +448,14 @@ void GUI::initGui(sf::RenderWindow& window)
                         }
                     }
                     ImGui::End();
+                    break;
                 }
             }
 
             //transformations window-shear window
         case 5:
             {
+                std::cout << "Shear Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -500,6 +511,7 @@ void GUI::initGui(sf::RenderWindow& window)
                     }
                 }
                 ImGui::End();
+                break;
             }
         default:
             break;
