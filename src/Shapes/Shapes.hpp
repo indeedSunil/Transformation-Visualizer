@@ -14,7 +14,8 @@ public:
         Circle,
         Ellipse,
         Line,
-        LetterA
+        LetterA,
+        CustomRectangle
     };
 
     // Shapes
@@ -23,6 +24,9 @@ public:
     static sf::ConvexShape triangle;
     static sf::RectangleShape line;
     static sf::Text letterA;
+
+    // CustomShapes
+    static sf::ConvexShape CustomShape;
 
     // For displaying co-ordinates of the shape
     static sf::Text coordinatesText;
@@ -53,30 +57,17 @@ public:
     static sf::Vector2f startPos; // Position of the mouse when dragging started
 
     // Remove the current shape
-    static void clearShape()
-    {
-        isDrawing = false;
-        Renderer::hasShape = false;
-        rectangle = sf::RectangleShape();
-        coordinatesText.setString("");
-    }
+    static void clearShape();
 
 private:
     static ShapeType currentShape; // Type of current shape
 
-    static void setShapeOutlineColor(const sf::Color& color) {
-        switch (currentShape) {
-        case ShapeType::Rectangle:
-            rectangle.setOutlineColor(color);
-            break;
-        case ShapeType::Circle:
-            circle.setOutlineColor(color);
-            break;
-        case ShapeType::Triangle:
-            triangle.setOutlineColor(color);
-            break;
-        case ShapeType::Line:
-            line.setOutlineColor(color);
+    static void setShapeOutlineColor(const sf::Color& color)
+    {
+        switch (currentShape)
+        {
+        case ShapeType::CustomRectangle:
+            CustomShape.setOutlineColor(color);
             break;
         default:
             break;

@@ -122,34 +122,21 @@ void Renderer::initializeShape(sf::RenderWindow& window)
 {
     switch (currentShape)
     {
-    case ShapeType::Rectangle:
-        Shapes::rectangle.setPosition(startPos);
-        Shapes::rectangle.setSize(sf::Vector2f(0, 0));
-        Shapes::rectangle.setFillColor(sf::Color::Transparent);
-        Shapes::rectangle.setOutlineColor(sf::Color::Black);
-        Shapes::rectangle.setOutlineThickness(0.1);
-        std::cout << "Rectangle initializing: " << Shapes::rectangle.getPosition().x << " " << Shapes::rectangle.
-            getPosition().y << std::endl;
-        window.draw(Shapes::rectangle);
-        break;
-    case ShapeType::Circle:
-        Shapes::circle.setPosition(startPos);
-        Shapes::circle.setRadius(0);
-        Shapes::circle.setFillColor(sf::Color::Transparent);
-        Shapes::circle.setOutlineColor(sf::Color::Black);
-        Shapes::circle.setOutlineThickness(2);
-        window.draw(Shapes::circle);
-        break;
-    case ShapeType::Triangle:
-        Shapes::triangle.setPointCount(3);
-    // Ensure the points are slightly different initially
-        Shapes::triangle.setPoint(0, startPos);
-        Shapes::triangle.setPoint(1, startPos + sf::Vector2f(1.f, 0.f));
-        Shapes::triangle.setPoint(2, startPos + sf::Vector2f(1.f, 1.f));
-        Shapes::triangle.setFillColor(sf::Color::Transparent);
-        Shapes::triangle.setOutlineColor(sf::Color::White);
-        Shapes::triangle.setOutlineThickness(2);
-        break;
+    case ShapeType::CustomRectangle:
+        {
+            Shapes::CustomShape.setPointCount(4);
+            Shapes::CustomShape.setPoint(0, startPos);
+            Shapes::CustomShape.setPoint(1, startPos + sf::Vector2f(2.f, 0.f));  // Larger initial size
+            Shapes::CustomShape.setPoint(2, startPos + sf::Vector2f(2.f, 2.f));  // Larger initial size
+            Shapes::CustomShape.setPoint(3, startPos + sf::Vector2f(0.f, 2.f));  // Larger initial size
+            Shapes::CustomShape.setFillColor(sf::Color::Transparent);
+            Shapes::CustomShape.setOutlineColor(sf::Color::Black);
+            Shapes::CustomShape.setOutlineThickness(0.1f);
+            window.draw(Shapes::CustomShape);
+            break;
+        }
+
+
     default:
         break;
     }
@@ -159,21 +146,11 @@ void Renderer::finishDrawing(sf::RenderWindow& window)
 {
     switch (currentShape)
     {
-    case ShapeType::Rectangle:
-        Shapes::rectangle.setFillColor(sf::Color::Transparent);
-        window.draw(Shapes::rectangle);
+    case ShapeType::CustomRectangle:
+        Shapes::CustomShape.setFillColor(sf::Color::Transparent);
+        window.draw(Shapes::CustomShape);
         break;
-    case ShapeType::Triangle:
-        Shapes::triangle.setFillColor(sf::Color::Transparent);
-        window.draw(Shapes::triangle);
-        break;
-    case ShapeType::Circle:
-        Shapes::circle.setFillColor(sf::Color::Transparent);
-        window.draw(Shapes::circle);
-        break;
-    case ShapeType::Line:
-        Shapes::line.setFillColor(sf::Color::Transparent);
-        break;
+
     default:
         break;
     }
@@ -184,19 +161,17 @@ void Renderer::displayCoordinates(sf::RenderWindow& window)
     Shapes::coordinatesText.setCharacterSize(20);
     Shapes::coordinatesText.setFillColor(sf::Color::White);
     std::ostringstream oss;
-    oss << std::fixed << std::setprecision(0); // One digit after the decimal
+    oss << std::fixed << std::setprecision(1); // One digit after the decimal point
 
     switch (currentShape)
     {
-    case ShapeType::Rectangle:
+    case ShapeType::CustomRectangle:
         {
-            sf::Vector2f position = Shapes::rectangle.getPosition();
-            sf::Vector2f size = Shapes::rectangle.getSize();
 
-            const sf::Vector2f A = position;
-            const sf::Vector2f B = {position.x + size.x, position.y};
-            const sf::Vector2f C = {position.x + size.x, position.y + size.y};
-            const sf::Vector2f D = {position.x, position.y + size.y};
+            const sf::Vector2f A = Shapes::CustomShape.getPoint(0);
+            const sf::Vector2f B = Shapes::CustomShape.getPoint(1);
+            const sf::Vector2f C = Shapes::CustomShape.getPoint(2);
+            const sf::Vector2f D = Shapes::CustomShape.getPoint(3);
 
             oss << "Co-ordinates of Rectangle:\n";
             oss << "A: (" << A.x << ", " << A.y << ")\n";
@@ -206,12 +181,6 @@ void Renderer::displayCoordinates(sf::RenderWindow& window)
 
             break;
         }
-    case ShapeType::Circle:
-        {
-           break;
-        }
-
-
     default:
         return;
     }

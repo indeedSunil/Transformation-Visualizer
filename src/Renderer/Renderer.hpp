@@ -11,13 +11,17 @@ public:
         Circle,
         Ellipse,
         Line,
-        LetterA
+        LetterA,
+        CustomRectangle
     };
 
     static void handleMouseEvent(const sf::Event& event, sf::RenderWindow& window);
     static void render(sf::RenderWindow& window);
     static void setCurrentShape(ShapeType shape);
     static bool hasShape;  // true if a shape is currently stored
+    static void changeIsDrawing(const bool newValue){
+        isDrawing = newValue;
+    };
 
 
 private:

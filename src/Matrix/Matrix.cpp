@@ -14,7 +14,7 @@ void TransformationAlgorithm::setTranslation(float tx, float ty) {
     m_transformMatrix(1, 2) = ty;
 }
 
-void TransformationAlgorithm::setScaling(float sx, float sy) {
+void TransformationAlgorithm::setScaling(const float sx = 1, const float sy = 1) {
     m_transformMatrix = Eigen::Matrix3f::Identity();
     m_transformMatrix(0, 0) = sx;
     m_transformMatrix(1, 1) = sy;
@@ -80,7 +80,7 @@ void TransformationAlgorithm::setReflectionAboutLine(float m, float c) {
     // Translation components to handle the y-intercept c
     float t = (2 * m * c) / denominator;
     m_transformMatrix(0, 2) = -t;
-    m_transformMatrix(1, 2) = 2 * c - t;
+    m_transformMatrix(1, 2) = t/m;
 }
 
 void TransformationAlgorithm::combineTransformation(const Eigen::Matrix3f& newTransform) {

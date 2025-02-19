@@ -1,200 +1,201 @@
-    #include "transformations.hpp"
+#include "transformations.hpp"
 #include <cmath>
 #include <iostream>
 
-
-void Transformation::scale(sf::RectangleShape& shape, const sf::Vector2f scaleFactor)
+// Scale the shape by the given scale factor
+void Transformation::scale(sf::ConvexShape& shape, const sf::Vector2f scaleFactor)
 {
-    // Get current size and position
-    sf::Vector2f currentSize = shape.getSize();
-    sf::Vector2f currentPos = shape.getPosition();
+    const int pointCount = shape.getPointCount();
 
-    // Calculate current center point
-    sf::Vector2f center = {
-        currentPos.x + (currentSize.x / 2.0f),
-        currentPos.y + (currentSize.y / 2.0f)
-    };
+    // Get the center of the shape
+    sf::Vector2f center(0, 0);
+    for (int i = 0; i < pointCount; i++) {
+        center += shape.getPoint(i);
+    }
+    center /= static_cast<float>(pointCount);
 
-    // Calculate new size
-    sf::Vector2f newSize = {
-        currentSize.x * scaleFactor.x,
-        currentSize.y * scaleFactor.y
-    };
+    // Create transformation matrices
+    TransformationAlgorithm toOriginTransform;
+    toOriginTransform.setTranslation(-center.x, -center.y);
 
-    // Round the new size to ensure it aligns with grid
-    newSize.x = std::ceil(newSize.x);
-    newSize.y = std::ceil(newSize.y);
+    TransformationAlgorithm scaleTransform;
+    scaleTransform.setScaling(scaleFactor.x, scaleFactor.y);
 
-    // Calculate new position to maintain center point
-    sf::Vector2f newPos = {
-        center.x - (newSize.x / 2.0f),
-        center.y - (newSize.y / 2.0f)
-    };
+    TransformationAlgorithm backTransform;
+    backTransform.setTranslation(center.x, center.y);
 
-    // Snap new position to grid
-    newPos.x = std::floor(newPos.x);
-    newPos.y = std::floor(newPos.y);
+    // Combine transformations in correct order
+    // Final = Translation_back * Scale * Translation_to_origin
+    const Eigen::Matrix3f finalTransform = backTransform.getTransformationMatrix() *
+                                   scaleTransform.getTransformationMatrix() *
+                                   toOriginTransform.getTransformationMatrix();
 
-    // Update the shape
-    shape.setSize(newSize);
-    shape.setPosition(newPos);
-}
+    // Create a transform with the final matrix
+    TransformationAlgorithm finalTransformAlgo;
+    finalTransformAlgo.resetTransformation();
+    finalTransformAlgo.combineTransformation(finalTransform);
 
-// Circle: assume a uniform scale factor. If scaleFactor.x and scaleFactor.y differ, choose one (or average).
-void Transformation::scale(sf::CircleShape& shape, sf::Vector2f scaleFactor) {
-    // Here we use the x-component as the uniform factor.
-    float factor = scaleFactor.x;
-    float newRadius = shape.getRadius() * factor;
-    // If the circle’s origin is not set to its center, adjust if needed.
-    shape.setRadius(newRadius);
-    // Optionally re-center if you want to preserve the current center:
-    sf::Vector2f currentPos = shape.getPosition(); // top-left of bounding box
-    shape.setOrigin({newRadius, newRadius});
-    shape.setPosition({currentPos.x + newRadius, currentPos.y + newRadius});
-}
-
-// ConvexShape (e.g., Triangle): scale each point relative to the shape’s center.
-void Transformation::scale(sf::ConvexShape& shape, sf::Vector2f scaleFactor) {
-    sf::FloatRect bounds = shape.getGlobalBounds();
-    sf::Vector2f center = { bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f };
-    for (size_t i = 0; i < shape.getPointCount(); i++) {
-        sf::Vector2f pt = shape.getPoint(i);
-        // Calculate the vector from the center to the point and scale it.
-        sf::Vector2f offset = { pt.x - center.x, pt.y - center.y };
-        offset.x *= scaleFactor.x;
-        offset.y *= scaleFactor.y;
-        shape.setPoint(i, { center.x + offset.x, center.y + offset.y });
+    // Apply transformation to all points
+    for (int i = 0; i < pointCount; i++)
+    {
+        sf::Vector2f originalPoint = shape.getPoint(i);
+        const sf::Vector2f transformedPoint = finalTransformAlgo.transformPoint(originalPoint);
+        shape.setPoint(i, transformedPoint);
     }
 }
 
-// ---------------------- TRANSLATE -------------------------
-
-// Use the built-in move() function which is available in all Transformable classes.
-void Transformation::translate(sf::RectangleShape& shape, sf::Vector2f translationFactor) {
-    shape.move(translationFactor);
-}
-
-void Transformation::translate(sf::CircleShape& shape, sf::Vector2f translationFactor) {
-    shape.move(translationFactor);
-}
-
-void Transformation::translate(sf::ConvexShape& shape, sf::Vector2f translationFactor) {
-    shape.move(translationFactor);
-}
 
 
-// For rotation, we first set the origin to the center (if not already set) then rotate.
-void Transformation::rotate(sf::RectangleShape& shape, const float angle, const sf::Vector2f pivot)
+// Translate the shape by the given translation factor
+void Transformation::translate(sf::ConvexShape& shape, sf::Vector2f translationFactor)
 {
-    // Get current position
-    sf::Vector2f currentPos = shape.getPosition();
+    const int pointCount = shape.getPointCount();
+    TransformationAlgorithm transform;
 
-    // Determine rotation pivot:
-    // If pivot is (0,0), rotate around coordinate system origin
-    // Otherwise, rotate around the specified pivot point
-    sf::Vector2f rotationPivot = pivot;
+    // Set translation transformation
+    transform.setTranslation(translationFactor.x, translationFactor.y);
 
-    // Calculate relative rotation
-    sf::Angle currentRotation = shape.getRotation();
-    sf::Angle newRotation = currentRotation + sf::degrees(angle);
-
-    if (pivot.x == 0 && pivot.y == 0) {
-        // For origin rotation, we just need to set the new rotation
-        // and the shape will rotate around (0,0)
-        shape.setRotation(newRotation);
-    } else {
-        // For rotation around a specific pivot point:
-        // 1. Get the current position relative to pivot
-        sf::Vector2f relativePos = currentPos - rotationPivot;
-
-        // 2. Set the new rotation
-        shape.setRotation(newRotation);
-
-        // 3. Calculate the new position after rotation
-        float angleInRadians = newRotation.asRadians();
-        sf::Vector2f newPos = {
-            rotationPivot.x + (relativePos.x * std::cos(angleInRadians) - relativePos.y * std::sin(angleInRadians)),
-            rotationPivot.y + (relativePos.x * std::sin(angleInRadians) + relativePos.y * std::cos(angleInRadians))
-        };
-
-        // 4. Snap to grid
-        newPos.x = std::floor(newPos.x);
-        newPos.y = std::floor(newPos.y);
-
-        // 5. Update position
-        shape.setPosition(newPos);
+    // Apply transformation to all points
+    for (int i = 0; i < pointCount; i++)
+    {
+        sf::Vector2f originalPoint = shape.getPoint(i);
+        sf::Vector2f transformedPoint = transform.transformPoint(originalPoint);
+        shape.setPoint(i, transformedPoint);
     }
 }
 
-void Transformation::rotate(sf::CircleShape& shape, float angle, sf::Vector2f pivot) {
-    float radius = shape.getRadius();
-    // Set origin to center
-    shape.setOrigin({radius, radius});
-    shape.rotate(sf::degrees(angle));;
+
+// Rotate the shape by the given angle around the pivot point
+void Transformation::rotate(sf::ConvexShape& shape, const float angle, const sf::Vector2f pivot)
+{
+    const int pointCount = shape.getPointCount();
+    TransformationAlgorithm transform;
+
+    // Create transformation matrices
+    TransformationAlgorithm toPivotTransform;
+    toPivotTransform.setTranslation(-pivot.x, -pivot.y);
+
+    TransformationAlgorithm rotateTransform;
+    rotateTransform.setRotation(angle);
+
+    TransformationAlgorithm backTransform;
+    backTransform.setTranslation(pivot.x, pivot.y);
+
+    // Combine transformations in correct order
+    // Final = Translation_back * Rotation * Translation_to_pivot
+    Eigen::Matrix3f finalTransform = backTransform.getTransformationMatrix() *
+                                   rotateTransform.getTransformationMatrix() *
+                                   toPivotTransform.getTransformationMatrix();
+
+    // Create a transform with the final matrix
+    TransformationAlgorithm finalTransformAlgo;
+    finalTransformAlgo.resetTransformation();
+    finalTransformAlgo.combineTransformation(finalTransform);
+
+    // Apply transformation to all points
+    for (int i = 0; i < pointCount; i++)
+    {
+        sf::Vector2f originalPoint = shape.getPoint(i);
+        sf::Vector2f transformedPoint = finalTransformAlgo.transformPoint(originalPoint);
+        shape.setPoint(i, transformedPoint);
+    }
 }
 
-void Transformation::rotate(sf::ConvexShape& shape, float angle, sf::Vector2f pivot) {
-    // Compute the center of the convex shape.
-    sf::FloatRect bounds = shape.getGlobalBounds();
-    shape.setOrigin({ bounds.size.x / 2.f, bounds.size.y / 2.f });
-    shape.rotate(sf::degrees(angle));
+
+// Reflect the shape about the x-axis or y-axis
+void Transformation::reflect(sf::ConvexShape& shape, float slope, float yIntercept)
+{
+    const int pointCount = shape.getPointCount();
+    TransformationAlgorithm transform;
+
+    // Debug: Print original points and reflection parameters
+    for (int i = 0; i < pointCount; i++)
+    {
+        std::cout << "Original Point " << i << ": " << shape.getPoint(i).x << ", " << shape.getPoint(i).y << std::endl;
+    }
+    std::cout << "Reflection line: y = " << slope << "x + " << yIntercept << std::endl;
+
+    // Special cases for common reflections
+    if (slope == 0 && yIntercept == 0) {
+        // Reflection about x-axis
+        transform.setReflectionAboutX();
+    }
+    else if (slope == 9999 && yIntercept == 0) {
+        // Reflection about y-axis
+        transform.setReflectionAboutY();
+    }
+    else if (slope == 1 && yIntercept == 0) {
+        // Reflection about y = x
+        transform.setReflectionAboutLine_Y_Equals_X();
+    }
+    else if (slope == -1 && yIntercept == 0) {
+        // Reflection about y = -x
+        transform.setReflectionAboutLine_Y_Equals_Negative_X();
+    }
+    else {
+        // General case: reflection about y = mx + c
+        transform.setReflectionAboutLine(slope, yIntercept);
+    }
+
+    // Get the transformation matrix
+    Eigen::Matrix3f reflectionMatrix = transform.getTransformationMatrix();
+
+    // Create final transform
+    TransformationAlgorithm finalTransform;
+    finalTransform.resetTransformation();
+    finalTransform.combineTransformation(reflectionMatrix);
+
+    // Apply transformation to all points
+    for (int i = 0; i < pointCount; i++)
+    {
+        sf::Vector2f originalPoint = shape.getPoint(i);
+        sf::Vector2f reflectedPoint = finalTransform.transformPoint(originalPoint);
+        shape.setPoint(i, reflectedPoint);
+        std::cout << "Reflected Point " << i << ": " << reflectedPoint.x << ", " << reflectedPoint.y << std::endl;
+    }
 }
 
-// ---------------------- REFLECT -------------------------
 
-// Reflection is implemented by negating the corresponding component of the scale.
-void Transformation::reflect(sf::RectangleShape& shape, bool horizontally) {
-    const sf::Vector2f currentScale = shape.getScale();
-    if (horizontally)
-        shape.setScale(sf::Vector2f(-currentScale.x, currentScale.y));
-    else
-        shape.setScale(sf::Vector2f(currentScale.x, -currentScale.y));
-}
 
-void Transformation::reflect(sf::CircleShape& shape, bool horizontally) {
-    // For a circle, reflection doesn't change its appearance if it’s symmetric.
-    // But if you want to simulate it, you can change its scale.
-    const sf::Vector2f currentScale = shape.getScale();
-    if (horizontally)
-        shape.setScale(sf::Vector2f(-currentScale.x, currentScale.y));
-    else
-        shape.setScale(sf::Vector2f(currentScale.x, -currentScale.y));
-}
+// Shear the shape by the given shear factor
+void Transformation::shear(sf::ConvexShape& shape, sf::Vector2f shearFactor)
+{
+    const int pointCount = shape.getPointCount();
 
-void Transformation::reflect(sf::ConvexShape& shape, bool horizontally) {
-    const sf::Vector2f currentScale = shape.getScale();
-    if (horizontally)
-        shape.setScale(sf::Vector2f(-currentScale.x, currentScale.y));
-    else
-        shape.setScale(sf::Vector2f(currentScale.x, -currentScale.y));
-}
+    // Get the center of the shape
+    sf::Vector2f center(0, 0);
+    for (int i = 0; i < pointCount; i++) {
+        center += shape.getPoint(i);
+    }
+    center /= static_cast<float>(pointCount);
+    std::cout << "Center: " << center.x << ", " << center.y << std::endl;
 
-// ---------------------- SHEAR -------------------------
+    // Create transformation matrices
+    TransformationAlgorithm toCenterTransform;
+    toCenterTransform.setTranslation(-center.x, -center.y);
 
-// Shearing is not provided out-of-the-box in SFML. One workaround for a rectangle is to
-// adjust its size based on the shear factor. This is a simplistic approach.
-void Transformation::shear(sf::RectangleShape& shape, sf::Vector2f shearFactor) {
-    const sf::Vector2f size = shape.getSize();
-    if (shearFactor.x != 0.0f)
-        shape.setSize(sf::Vector2f(size.x + size.y * shearFactor.x, size.y));
-    if (shearFactor.y != 0.0f)
-        shape.setSize(sf::Vector2f(size.x, size.y + size.x * shearFactor.y));
-}
+    TransformationAlgorithm shearTransform;
+    shearTransform.setShearing(shearFactor.x, shearFactor.y);
 
-void Transformation::shear(sf::CircleShape& shape, sf::Vector2f shearFactor) {
-    // For circles, shearing will destroy the circle's symmetry.
-    // You might instead want to convert the circle into an ellipse or skip shearing.
-    // For demonstration, we do nothing.
-}
+    TransformationAlgorithm backTransform;
+    backTransform.setTranslation(center.x, center.y);
 
-void Transformation::shear(sf::ConvexShape& shape, sf::Vector2f shearFactor) {
-    // For a convex shape, you could adjust each point. This example applies a basic shear.
-    for (size_t i = 0; i < shape.getPointCount(); i++) {
-        sf::Vector2f pt = shape.getPoint(i);
-        // For horizontal shear, add a fraction of the y value to x.
-        pt.x += pt.y * shearFactor.x;
-        // For vertical shear, add a fraction of the x value to y.
-        pt.y += pt.x * shearFactor.y;
-        shape.setPoint(i, pt);
+    // Combine transformations in correct order
+    // Final = Translation_back * Shear * Translation_to_center
+    Eigen::Matrix3f finalTransform = backTransform.getTransformationMatrix() *
+                                   shearTransform.getTransformationMatrix() *
+                                   toCenterTransform.getTransformationMatrix();
+
+    // Create a transform with the final matrix
+    TransformationAlgorithm finalTransformAlgo;
+    finalTransformAlgo.resetTransformation();
+    finalTransformAlgo.combineTransformation(finalTransform);
+
+    // Apply transformation to all points
+    for (int i = 0; i < pointCount; i++)
+    {
+        sf::Vector2f originalPoint = shape.getPoint(i);
+        sf::Vector2f transformedPoint = finalTransformAlgo.transformPoint(originalPoint);
+        shape.setPoint(i, transformedPoint);
     }
 }

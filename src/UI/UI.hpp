@@ -9,7 +9,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include <SFML/Graphics/Texture.hpp>
-#include <GUI/gui.h>
+#include <GUI/gui.hpp>
 
 
 class UI {

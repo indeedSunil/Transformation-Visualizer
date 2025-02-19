@@ -1,4 +1,4 @@
-#include "gui.h"
+#include "gui.hpp"
 
 std::vector<sf::Texture> GUI::textures; // Array of textures
 bool GUI::showColorWindow = false;
@@ -165,7 +165,6 @@ void GUI::initGui(sf::RenderWindow& window)
         {
         case 1:
             {
-                std::cout<< "Scale Window"<<std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Set fixed size
 
@@ -215,7 +214,7 @@ void GUI::initGui(sf::RenderWindow& window)
                     if (ImGui::Button("Apply Scale"))
                     {
                         Shapes::isSelected = true;
-                        Transformation::scale(Shapes::rectangle, {scaleX, scaleY});
+                        Transformation::scale(Shapes::CustomShape, {scaleX, scaleY});
                     }
                 }
                 ImGui::End();
@@ -223,10 +222,9 @@ void GUI::initGui(sf::RenderWindow& window)
             }
 
 
-            //transformations window-translation window
+        //transformations window-translation window
         case 2:
             {
-                std::cout << "Translate Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -277,17 +275,16 @@ void GUI::initGui(sf::RenderWindow& window)
                     if (ImGui::Button("Apply Translate"))
                     {
                         Shapes::isSelected = true;
-                        Transformation::translate(Shapes::rectangle, {translateX, translateY});
+                        Transformation::translate(Shapes::CustomShape, {translateX, translateY});
                     }
                 }
                 ImGui::End();
                 break;
             }
 
-            //transformations window-rotation window
+        //transformations window-rotation window
         case 3:
             {
-                std::cout << "Rotate Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -341,19 +338,19 @@ void GUI::initGui(sf::RenderWindow& window)
                     if (ImGui::Button("Apply Rotate"))
                     {
                         Shapes::isSelected = true;
-                        Transformation::rotate(Shapes::rectangle, rotateAngle, pivot);
+                        Transformation::rotate(Shapes::CustomShape, rotateAngle, pivot);
                     }
                 }
                 ImGui::End();
                 break;
             }
 
-            //transformations window-reflection window
+        //transformations window-reflection window
         case 4:
             {
-                std::cout << "Reflect Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always);
-                ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Increased size to accommodate more options
+                ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
+                // Increased size to accommodate more options
 
                 if (ImGui::Begin("Reflect", &showTransformationWindow,
                                  ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -362,7 +359,7 @@ void GUI::initGui(sf::RenderWindow& window)
 
                     // Static variables to store the reflection options
                     static int reflectionType = 0;
-                    static float m = 1.0f; // Slope for y=mx+c
+                    static float m = 0.0f; // Slope for y=mx+c
                     static float c = 0.0f; // Y-intercept for y=mx+c
                     static bool showLineParams = false;
 
@@ -371,25 +368,31 @@ void GUI::initGui(sf::RenderWindow& window)
                     if (ImGui::RadioButton("X-axis (y=0)", &reflectionType, 0))
                     {
                         showLineParams = false;
+                        m = 0;
+                        c = 0;
                     }
                     if (ImGui::RadioButton("Y-axis (x=0)", &reflectionType, 1))
                     {
                         showLineParams = false;
+                        m = 9999;
+                        c = 0;
                     }
                     if (ImGui::RadioButton("Line y=x", &reflectionType, 2))
                     {
                         showLineParams = false;
+                        m = 1;
+                        c = 0;
                     }
                     if (ImGui::RadioButton("Line y=-x", &reflectionType, 3))
                     {
                         showLineParams = false;
+                        m = -1;
+                        c = 0;
                     }
                     if (ImGui::RadioButton("Line y=mx+c", &reflectionType, 4))
                     {
                         showLineParams = true;
                     }
-                    // X Reflection
-                    ImGui::Text("Reflect X:");
 
                     // Show slope and y-intercept inputs if y=mx+c is selected
                     if (showLineParams)
@@ -410,8 +413,7 @@ void GUI::initGui(sf::RenderWindow& window)
 
                         ImGui::PopItemWidth();
                     }
-                    // Y Reflection
-                    ImGui::Text("Reflect Y:");
+
 
                     ImGui::Spacing();
                     ImGui::Separator();
@@ -441,21 +443,16 @@ void GUI::initGui(sf::RenderWindow& window)
                         default:
                             break;
                         }
-                        if (ImGui::Button("Apply Reflect"))
-                        {
-                            Shapes::isSelected = true;
-                            // Transformation::reflect(Math::rectangle, reflectX);
-                        }
+                        Transformation::reflect(Shapes::CustomShape, m, c);
                     }
                     ImGui::End();
                     break;
                 }
             }
 
-            //transformations window-shear window
+        //transformations window-shear window
         case 5:
             {
-                std::cout << "Shear Window" << std::endl;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -507,7 +504,7 @@ void GUI::initGui(sf::RenderWindow& window)
                     if (ImGui::Button("Apply Shear"))
                     {
                         Shapes::isSelected = true;
-                        Transformation::shear(Shapes::rectangle, {shearX, shearY});
+                        Transformation::shear(Shapes::CustomShape, {shearX, shearY});
                     }
                 }
                 ImGui::End();
@@ -561,7 +558,7 @@ void GUI::initGui(sf::RenderWindow& window)
                 case 0:
                     std::cout << "Selected Texture: " << textureIndex << std::endl;
                     Renderer::hasShape = false;
-                    Renderer::setCurrentShape(Renderer::ShapeType::Rectangle);
+                    Renderer::setCurrentShape(Renderer::ShapeType::CustomRectangle);
                     break;
                 case 1:
                     Renderer::hasShape = false;
