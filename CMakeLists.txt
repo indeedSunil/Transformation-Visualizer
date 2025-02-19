@@ -40,6 +40,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         external/SFML/include
         external/imgui
         external/imguiSfml
+        external/Eigen
 )
 
 # Set output directory
