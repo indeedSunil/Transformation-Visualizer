@@ -40,56 +40,14 @@ void Shapes::updateShape()
         }
     case ShapeType::Circle:
         {
-            // Convert positions to window coordinates first
-            sf::Vector2f windowStartPos = UI::graphToWindow(startPos);
-            sf::Vector2f windowCurrentPos = UI::graphToWindow(currentPos);
-
-            // Calculate radius in window coordinates
-            const float radius = std::sqrt(
-                static_cast<float>(std::pow(windowCurrentPos.x - windowStartPos.x, 2)) +
-                static_cast<float>(std::pow(windowCurrentPos.y - windowStartPos.y, 2))
-            );
-
-            circle.setRadius(radius);
-            circle.setPosition(windowStartPos);
             break;
         }
     case ShapeType::Triangle:
         {
-            // Convert positions to window coordinates first
-            sf::Vector2f windowStartPos = UI::graphToWindow(startPos);
-            sf::Vector2f windowCurrentPos = UI::graphToWindow(currentPos);
-
-            // Calculate the midpoint for the second point (instead of using currentPos.x directly)
-            sf::Vector2f midPoint = sf::Vector2f(
-                windowStartPos.x + (windowCurrentPos.x - windowStartPos.x) / 2.0f,
-                windowStartPos.y
-            );
-
-            triangle.setPointCount(3);
-            triangle.setPoint(0, windowStartPos);                    // Left point
-            triangle.setPoint(1, midPoint);                         // Top point
-            triangle.setPoint(2, windowCurrentPos);                 // Right point
-
-            // Ensure the triangle stays within window bounds
-            sf::FloatRect bounds = triangle.getGlobalBounds();
-            if (bounds.position.x + bounds.size.x > UI::windowSize.x) {
-                // Adjust currentPos to keep triangle within window
-                float scale = (UI::windowSize.x - bounds.position.x) / bounds.size.x;
-                windowCurrentPos.x = windowStartPos.x + (windowCurrentPos.x - windowStartPos.x) * scale;
-                triangle.setPoint(2, windowCurrentPos);
-            }
             break;
         }
     case ShapeType::Line:
         {
-            const sf::Vector2f direction = UI::graphToWindow(currentPos) - UI::graphToWindow(startPos);
-            const float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-            line.setSize(sf::Vector2f(length, 2.0f));
-            line.setPosition(UI::graphToWindow(startPos));
-            float angle = std::atan2(direction.y, direction.x) * 180 / 3.14159f;
-            line.setRotation(sf::radians(angle));
-            break;
         }
     default:
         break;
