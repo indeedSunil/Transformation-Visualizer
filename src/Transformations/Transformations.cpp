@@ -113,41 +113,58 @@ void Transformation::reflect(sf::ConvexShape& shape, float slope, float yInterce
     }
     std::cout << "Reflection line: y = " << slope << "x + " << yIntercept << std::endl;
 
-    // Special cases for common reflections
+    // Special cases
     if (slope == 0 && yIntercept == 0) {
-        // Reflection about x-axis
         transform.setReflectionAboutX();
     }
     else if (slope == 9999 && yIntercept == 0) {
-        // Reflection about y-axis
         transform.setReflectionAboutY();
     }
     else if (slope == 1 && yIntercept == 0) {
-        // Reflection about y = x
         transform.setReflectionAboutLine_Y_Equals_X();
     }
     else if (slope == -1 && yIntercept == 0) {
-        // Reflection about y = -x
         transform.setReflectionAboutLine_Y_Equals_Negative_X();
     }
     else {
-        // General case: reflection about y = mx + c
-        transform.setReflectionAboutLine(slope, yIntercept);
+        // General case using composite transformations
+        TransformationAlgorithm finalTransform;
+        finalTransform.resetTransformation();
+
+        // 1. Translate to move line through origin
+        TransformationAlgorithm translate1;
+        translate1.setTranslation(0, -yIntercept);
+        finalTransform.combineTransformation(translate1.getTransformationMatrix());
+
+        // 2. Rotate to align with x-axis
+        TransformationAlgorithm rotate1;
+        float angle = -std::atan(slope) * 180.0f / M_PI; // Convert to degrees for setRotation
+        rotate1.setRotation(angle);
+        finalTransform.combineTransformation(rotate1.getTransformationMatrix());
+
+        // 3. Reflect about x-axis
+        TransformationAlgorithm reflectX;
+        reflectX.setReflectionAboutX();
+        finalTransform.combineTransformation(reflectX.getTransformationMatrix());
+
+        // 4. Rotate back
+        TransformationAlgorithm rotate2;
+        rotate2.setRotation(-angle);
+        finalTransform.combineTransformation(rotate2.getTransformationMatrix());
+
+        // 5. Translate back
+        TransformationAlgorithm translate2;
+        translate2.setTranslation(0, yIntercept);
+        finalTransform.combineTransformation(translate2.getTransformationMatrix());
+
+        transform = finalTransform;
     }
-
-    // Get the transformation matrix
-    Eigen::Matrix3f reflectionMatrix = transform.getTransformationMatrix();
-
-    // Create final transform
-    TransformationAlgorithm finalTransform;
-    finalTransform.resetTransformation();
-    finalTransform.combineTransformation(reflectionMatrix);
 
     // Apply transformation to all points
     for (int i = 0; i < pointCount; i++)
     {
         sf::Vector2f originalPoint = shape.getPoint(i);
-        sf::Vector2f reflectedPoint = finalTransform.transformPoint(originalPoint);
+        sf::Vector2f reflectedPoint = transform.transformPoint(originalPoint);
         shape.setPoint(i, reflectedPoint);
         std::cout << "Reflected Point " << i << ": " << reflectedPoint.x << ", " << reflectedPoint.y << std::endl;
     }

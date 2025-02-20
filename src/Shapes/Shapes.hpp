@@ -54,6 +54,7 @@ public:
     // Add Bresenham line drawing function
     static void drawLineBresenham(sf::RenderWindow& window, int x1, int y1, int x2, int y2,
                                   sf::Color color = sf::Color::Black);
+    static std::vector<sf::Vector2f> getMidPointCirclePoints(int centerX, int centerY, int radius);
 
     // Fill the shape with a color
     static void fillColorInShape(sf::RenderWindow& window, const sf::Color& color);

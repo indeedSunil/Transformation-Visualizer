@@ -92,7 +92,7 @@ sf::Vector2f TransformationAlgorithm::transformPoint(const sf::Vector2f& point) 
     eigenPoint << point.x, point.y, 1.0f;
 
     Eigen::Vector3f transformedPoint = m_transformMatrix * eigenPoint;
-    return sf::Vector2f(transformedPoint.x(), transformedPoint.y());
+    return {transformedPoint.x(), transformedPoint.y()};
 }
 
 Eigen::Matrix3f TransformationAlgorithm::getTransformationMatrix() const {

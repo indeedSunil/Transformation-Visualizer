@@ -45,6 +45,66 @@ void Shapes::drawLineBresenham(sf::RenderWindow& window, const int x1, const int
     LinePoints.append(endVertex);
 }
 
+
+// Get the circle points using the midpoint algorithm
+std::vector<sf::Vector2f> Shapes::getMidPointCirclePoints(int centerX, int centerY, int radius)
+{
+    std::vector<sf::Vector2f> points;
+
+    int x = radius;
+    int y = 0;
+    int p = 1 - radius;
+
+    // First collect all points using midpoint algorithm
+    while (x >= y)
+    {
+        points.push_back(sf::Vector2f(centerX + x, centerY + y));
+        points.push_back(sf::Vector2f(centerX - x, centerY + y));
+        points.push_back(sf::Vector2f(centerX + x, centerY - y));
+        points.push_back(sf::Vector2f(centerX - x, centerY - y));
+        points.push_back(sf::Vector2f(centerX + y, centerY + x));
+        points.push_back(sf::Vector2f(centerX - y, centerY + x));
+        points.push_back(sf::Vector2f(centerX + y, centerY - x));
+        points.push_back(sf::Vector2f(centerX - y, centerY - x));
+
+        y++;
+        if (p <= 0)
+        {
+            p = p + 2 * y + 1;
+        }
+        else
+        {
+            x--;
+            p = p + 2 * y - 2 * x + 1;
+        }
+    }
+
+    // Now sort points based on their angle from center
+    std::sort(points.begin(), points.end(),
+              [centerX, centerY](const sf::Vector2f& a, const sf::Vector2f& b)
+              {
+                  // Calculate angles using atan2
+                  float angleA = std::atan2(a.y - centerY, a.x - centerX);
+                  float angleB = std::atan2(b.y - centerY, b.x - centerX);
+                  return angleA < angleB;
+              });
+
+    // Remove duplicates if any
+    points.erase(std::unique(points.begin(), points.end(),
+                             [](const sf::Vector2f& a, const sf::Vector2f& b)
+                             {
+                                 return a.x == b.x && a.y == b.y;
+                             }), points.end());
+
+    // Close the circle by adding the first point at the end
+    if (!points.empty())
+    {
+        points.push_back(points[0]);
+    }
+
+    return points;
+}
+
 // Update the shape according to the mouse position if the shape is clicked and hold and dragged
 void Shapes::updateShape(sf::RenderWindow& window)
 {
@@ -110,30 +170,60 @@ void Shapes::updateShape(sf::RenderWindow& window)
             break;
         }
     case ShapeType::CustomCircle:
+    {
+        if (currentPos == startPos)
         {
-            if (currentPos == startPos)
-            {
-                std::cout << "Error cause currentPos == startPos\n";
-                return;
-            }
-            // Calculate radius based on distance from start point to current mouse position
-            const float dx = currentPos.x - startPos.x;
-            const float dy = currentPos.y - startPos.y;
-            float radius = std::sqrt(dx * dx + dy * dy);
-
-            // Ensure minimum radius
-            if (radius < 1.0f) radius = 1.0f;
-
-            // Update all points to form circle
-            for (int i = 0; i < CIRCLE_POINTS; ++i)
-            {
-                const auto angle = static_cast<float>((i * 2 * M_PI) / CIRCLE_POINTS);
-                const auto x = static_cast<float>(startPos.x + radius * cos(angle));
-                const auto y = static_cast<float>(startPos.y + radius * sin(angle));
-                CustomShape.setPoint(i, sf::Vector2f(x, y));
-            }
-            break;
+            std::cout << "Error cause currentPos == startPos\n";
+            return;
         }
+        // Calculate radius based on distance from start point to current mouse position
+        const float dx = currentPos.x - startPos.x;
+        const float dy = currentPos.y - startPos.y;
+        float radius = std::sqrt(dx * dx + dy * dy);
+
+        // Ensure minimum radius
+        if (radius < 1.0f) radius = 1.0f;
+
+        // Update all points to form circle
+        for (int i = 0; i < CIRCLE_POINTS; ++i)
+        {
+            const auto angle = static_cast<float>((i * 2 * M_PI) / CIRCLE_POINTS);
+            const auto x = static_cast<float>(startPos.x + radius * cos(angle));
+            const auto y = static_cast<float>(startPos.y + radius * sin(angle));
+            CustomShape.setPoint(i, sf::Vector2f(x, y));
+        }
+        break;
+    }
+
+    // Using midpoint circle algorithm
+    // case ShapeType::CustomCircle:
+    //     {
+    //         if (currentPos == startPos)
+    //         {
+    //             std::cout << "Error cause currentPos == startPos\n";
+    //             return;
+    //         }
+    //
+    //         const float dx = currentPos.x - startPos.x;
+    //         const float dy = currentPos.y - startPos.y;
+    //         float radius = std::sqrt(dx * dx + dy * dy);
+    //
+    //         if (radius < 1.0f) radius = 1.0f;
+    //
+    //         std::vector<sf::Vector2f> circlePoints = getMidPointCirclePoints(
+    //             static_cast<int>(startPos.x),
+    //             static_cast<int>(startPos.y),
+    //             static_cast<int>(radius)
+    //         );
+    //
+    //         CustomShape.setPointCount(circlePoints.size());
+    //         for (size_t i = 0; i < circlePoints.size(); ++i)
+    //         {
+    //             CustomShape.setPoint(i, circlePoints[i]);
+    //         }
+    //         break;
+    //     }
+
     case ShapeType::CustomEllipse:
         {
             if (currentPos == startPos)
