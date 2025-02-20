@@ -6,7 +6,7 @@
 void Transformation::scale(sf::ConvexShape& shape, const sf::Vector2f scaleFactor)
 {
     const int pointCount = shape.getPointCount();
-
+    std::cout << "Shape received" << std::endl;
     // Get the center of the shape
     sf::Vector2f center(0, 0);
     for (int i = 0; i < pointCount; i++) {

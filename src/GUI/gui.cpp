@@ -13,7 +13,6 @@ void GUI::textureInit()
         "assets/images/circle.png",
         "assets/images/ellipse.png",
         "assets/images/line.png",
-        "assets/images/actor.jpg"
     };
 
     textures.resize(textureFiles.size()); // Resize the vector to hold all textures
@@ -89,12 +88,15 @@ void GUI::initGui(sf::RenderWindow& window)
                     {
                     case 0:
                         std::cout << "Red color selected" << std::endl;
+                        Shapes::fillColorInShape(sf::Color::Red);
                         break;
                     case 1:
                         std::cout << "Green color selected" << std::endl;
+                        Shapes::fillColorInShape(sf::Color::Green);
                         break;
                     case 2:
                         std::cout << "Blue color selected" << std::endl;
+                        Shapes::fillColorInShape(sf::Color::Blue);
                         break;
                     default:
                         break;
@@ -165,6 +167,9 @@ void GUI::initGui(sf::RenderWindow& window)
         {
         case 1:
             {
+                if (Shapes::getCurrentShape() == Shapes::ShapeType::CustomLine || Shapes::getCurrentShape() ==
+                    Shapes::ShapeType::None)
+                    break;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always); // Set fixed size
 
@@ -225,6 +230,9 @@ void GUI::initGui(sf::RenderWindow& window)
         //transformations window-translation window
         case 2:
             {
+                if (Shapes::getCurrentShape() == Shapes::ShapeType::CustomLine || Shapes::getCurrentShape() ==
+                    Shapes::ShapeType::None)
+                    break;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -285,6 +293,9 @@ void GUI::initGui(sf::RenderWindow& window)
         //transformations window-rotation window
         case 3:
             {
+                if (Shapes::getCurrentShape() == Shapes::ShapeType::CustomLine || Shapes::getCurrentShape() ==
+                    Shapes::ShapeType::None)
+                    break;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -348,6 +359,9 @@ void GUI::initGui(sf::RenderWindow& window)
         //transformations window-reflection window
         case 4:
             {
+                if (Shapes::getCurrentShape() == Shapes::ShapeType::CustomLine || Shapes::getCurrentShape() ==
+                    Shapes::ShapeType::None)
+                    break;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always);
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Increased size to accommodate more options
@@ -453,6 +467,9 @@ void GUI::initGui(sf::RenderWindow& window)
         //transformations window-shear window
         case 5:
             {
+                if (Shapes::getCurrentShape() == Shapes::ShapeType::CustomLine || Shapes::getCurrentShape() ==
+                    Shapes::ShapeType::None)
+                    break;
                 ImGui::SetNextWindowPos(ImVec2(240, 250), ImGuiCond_Always); // Set fixed position
                 ImGui::SetNextWindowSize(ImVec2(250, 200), ImGuiCond_Always);
                 // Made slightly taller to accommodate new elements
@@ -537,7 +554,7 @@ void GUI::initGui(sf::RenderWindow& window)
         {
             if (col > 0) ImGui::SameLine();
 
-            int textureIndex = row * numCols + col;
+            const int textureIndex = row * numCols + col;
             const auto textureID = (ImTextureID)static_cast<uintptr_t>(textures[textureIndex].getNativeHandle());
 
             // Add selected state styling
@@ -576,9 +593,6 @@ void GUI::initGui(sf::RenderWindow& window)
                     std::cout << "Line option clicked!" << std::endl;
                     Renderer::hasShape = false;
                     Renderer::setCurrentShape(Renderer::ShapeType::CustomLine);
-                    break;
-                case 5:
-                    Renderer::hasShape = false;
                     break;
                 default:
                     break;

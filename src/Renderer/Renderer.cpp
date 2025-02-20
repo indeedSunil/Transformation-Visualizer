@@ -58,8 +58,6 @@ void Renderer::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window
                 // };
                 sf::Vector2f snappedShapePos = Shapes::getShapePosition();
                 Shapes::dragOffset = snappedMousePos - snappedShapePos;
-                std::cout << "Position: " << Shapes::getShapePosition().x << " " << Shapes::getShapePosition().y <<
-                    std::endl;
             }
         }
         else if (!hasShape)
@@ -214,7 +212,6 @@ void Renderer::finishDrawing(sf::RenderWindow& window)
         break;
     case ShapeType::CustomLine:
         Shapes::drawLineBresenham(window, startPos.x, startPos.y, currentPos.x, currentPos.y, sf::Color::Black);
-        std::cout << "Line finalized " << std::endl;
         break;
     default:
         break;
@@ -232,7 +229,6 @@ void Renderer::displayCoordinates(sf::RenderWindow& window)
     {
     case ShapeType::CustomRectangle:
     case ShapeType::CustomTriangle:
-    case ShapeType::CustomLine:
         {
             const int pointCount = Shapes::CustomShape.getPointCount();
 

@@ -18,10 +18,10 @@ public:
 
     // Custom shape
     static sf::ConvexShape CustomShape;
-    static sf::VertexArray linePoint;
+    static sf::VertexArray LinePoints;
 
     // Number of points for a cirlc
-    static constexpr int CIRCLE_POINTS = 32;  // More points = smoother circle
+    static constexpr int CIRCLE_POINTS = 32; // More points = smoother circle
 
     // For displaying co-ordinates of the shape
     static sf::Text coordinatesText;
@@ -38,7 +38,7 @@ public:
 
     // Functions to control shapes
     static void handleShapeSelection(const sf::Vector2f& mousePos);
-    static void setCurrentShape(const ShapeType shape);
+    static void setCurrentShape(ShapeType shape);
     static void drawShape(sf::RenderWindow& window);
     static void updateShape(sf::RenderWindow& window);
     static bool isShapeClicked(const sf::Vector2f& mousePos, const sf::FloatRect& bounds);
@@ -51,16 +51,21 @@ public:
     static sf::Vector2f startPos; // Position of the mouse when dragging started
 
     // Add Bresenham line drawing function
-    static void drawLineBresenham(sf::RenderWindow& window, int x1, int y1, int x2, int y2, sf::Color color = sf::Color::Black);
+    static void drawLineBresenham(sf::RenderWindow& window, int x1, int y1, int x2, int y2,
+                                  sf::Color color = sf::Color::Black);
+
+    // Fill the shape with a color
+    static void fillColorInShape(const sf::Color& color);
 
     // Remove the current shape
     static void clearShape();
+    static ShapeType getCurrentShape() { return currentShape; }
 
 private:
     static ShapeType currentShape; // Type of current shape
 
     static void setShapeOutlineColor(const sf::Color& color)
     {
-            CustomShape.setOutlineColor(color);
+        CustomShape.setOutlineColor(color);
     }
 };

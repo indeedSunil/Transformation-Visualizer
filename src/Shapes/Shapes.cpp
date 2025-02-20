@@ -13,7 +13,7 @@ sf::Vector2f Shapes::startPos;
 sf::Vector2f Shapes::currentPos;
 sf::Vector2f Shapes::dragOffset;
 sf::Text Shapes::coordinatesText(Core::font);
-sf::VertexArray Shapes::linePoint(sf::PrimitiveType::Points);
+sf::VertexArray Shapes::LinePoints(sf::PrimitiveType::LineStrip);
 
 // Custom shape
 sf::ConvexShape Shapes::CustomShape;
@@ -25,38 +25,22 @@ void Shapes::setCurrentShape(const ShapeType shape)
     isDrawing = false;
 }
 
-void Shapes::drawLineBresenham(sf::RenderWindow& window, int x1, int y1, const int x2, const int y2,
+void Shapes::drawLineBresenham(sf::RenderWindow& window, const int x1, const int y1, const int x2, const int y2,
                                const sf::Color color)
 {
-    sf::VertexArray points(sf::PrimitiveType::Points);
+    LinePoints.clear();
 
-    int dx = abs(x2 - x1);
-    int dy = abs(y2 - y1);
-    const int sx = (x1 < x2) ? 1 : -1;
-    const int sy = (y1 < y2) ? 1 : -1;
-    int err = dx - dy;
+    // Add start point
+    sf::Vertex startVertex;
+    startVertex.position = sf::Vector2f(static_cast<float>(x1), static_cast<float>(y1));
+    startVertex.color = color;
+    LinePoints.append(startVertex);
 
-    while (true)
-    {
-        // Using aggregate initialization for vertex
-        points.append({{static_cast<float>(x1), static_cast<float>(y1)}, color});
-
-        if (x1 == x2 && y1 == y2) break;
-        std::cout << "Line being drawn at " << x1 << ", " << y1 << std::endl;
-        int e2 = 2 * err;
-        if (e2 > -dy)
-        {
-            err -= dy;
-            x1 += sx;
-        }
-        if (e2 < dx)
-        {
-            err += dx;
-            y1 += sy;
-        }
-    }
-
-    window.draw(points);
+    // Add end point
+    sf::Vertex endVertex;
+    endVertex.position = sf::Vector2f(static_cast<float>(x2), static_cast<float>(y2));
+    endVertex.color = color;
+    LinePoints.append(endVertex);
 }
 
 // Update the shape according to the mouse position if the shape is clicked and hold and dragged
@@ -90,13 +74,13 @@ void Shapes::updateShape(sf::RenderWindow& window)
                 return;
             }
             // Calculate the three points of the triangle
-            sf::Vector2f point1 = startPos; // First point stays at start position
+            const sf::Vector2f point1 = startPos; // First point stays at start position
             sf::Vector2f point2 = currentPos; // Second point follows mouse
 
             // Calculate the third point to form an isosceles triangle
-            float dx = point2.x - point1.x;
-            float dy = point2.y - point1.y;
-            float length = std::sqrt(dx * dx + dy * dy);
+            const float dx = point2.x - point1.x;
+            const float dy = point2.y - point1.y;
+            const float length = std::sqrt(dx * dx + dy * dy);
 
             // Set a minimum length to prevent division by zero
             const float MIN_LENGTH = 1.0f;
@@ -114,9 +98,9 @@ void Shapes::updateShape(sf::RenderWindow& window)
             }
 
             // Calculate the third point using perpendicular vector
-            sf::Vector2f perpendicular(-dy, dx); // Rotate 90 degrees
-            float height = length * 0.866f; // height = base * tan(60°)
-            sf::Vector2f point3 = startPos + perpendicular * (height / length);
+            const sf::Vector2f perpendicular(-dy, dx); // Rotate 90 degrees
+            const float height = length * 0.866f; // height = base * tan(60°)
+            const sf::Vector2f point3 = startPos + perpendicular * (height / length);
 
             CustomShape.setPoint(0, point1);
             CustomShape.setPoint(1, point2);
@@ -131,9 +115,9 @@ void Shapes::updateShape(sf::RenderWindow& window)
                 return;
             }
             // Calculate radius based on distance from start point to current mouse position
-            float dx = currentPos.x - startPos.x;
-            float dy = currentPos.y - startPos.y;
-            float radius = sqrt(dx * dx + dy * dy);
+            const float dx = currentPos.x - startPos.x;
+            const float dy = currentPos.y - startPos.y;
+            float radius = std::sqrt(dx * dx + dy * dy);
 
             // Ensure minimum radius
             if (radius < 1.0f) radius = 1.0f;
@@ -141,9 +125,9 @@ void Shapes::updateShape(sf::RenderWindow& window)
             // Update all points to form circle
             for (int i = 0; i < CIRCLE_POINTS; ++i)
             {
-                float angle = (i * 2 * M_PI) / CIRCLE_POINTS;
-                float x = startPos.x + radius * cos(angle);
-                float y = startPos.y + radius * sin(angle);
+                const auto angle = static_cast<float>((i * 2 * M_PI) / CIRCLE_POINTS);
+                const auto x = static_cast<float>(startPos.x + radius * cos(angle));
+                const auto y = static_cast<float>(startPos.y + radius * sin(angle));
                 CustomShape.setPoint(i, sf::Vector2f(x, y));
             }
             break;
@@ -166,9 +150,9 @@ void Shapes::updateShape(sf::RenderWindow& window)
             // Update all points to form ellipse
             for (int i = 0; i < CIRCLE_POINTS; ++i)
             {
-                float angle = (i * 2 * M_PI) / CIRCLE_POINTS;
-                float x = startPos.x + rx * cos(angle);
-                float y = startPos.y + ry * sin(angle);
+                const auto angle = static_cast<float>((i * 2 * M_PI) / CIRCLE_POINTS);
+                const auto x = static_cast<float>(startPos.x + rx * cos(angle));
+                const auto y = static_cast<float>(startPos.y + ry * sin(angle));
                 CustomShape.setPoint(i, sf::Vector2f(x, y));
             }
             break;
@@ -177,11 +161,10 @@ void Shapes::updateShape(sf::RenderWindow& window)
         {
             if (currentPos == startPos)
             {
-                std::cout << "Error cause currentPos == startPos\n";
+                std::cout << "Error: currentPos == startPos\n";
                 return;
             }
 
-            // Use coordinates directly since view handles scaling
             drawLineBresenham(window,
                               static_cast<int>(startPos.x), static_cast<int>(startPos.y),
                               static_cast<int>(currentPos.x), static_cast<int>(currentPos.y),
@@ -200,15 +183,11 @@ void Shapes::drawShape(sf::RenderWindow& window)
     window.setView(Core::getGraphView());
     switch (currentShape)
     {
-    case ShapeType::CustomRectangle:
-    case ShapeType::CustomTriangle:
-    case ShapeType::CustomCircle:
-    case ShapeType::CustomEllipse:
-        window.draw(CustomShape);
+    case ShapeType::CustomLine:
+        window.draw(LinePoints); // Draw the stored line points
         break;
-    // case ShapeType::CustomLine:
-    //     break;
     default:
+        window.draw(CustomShape);
         break;
     }
 }
@@ -244,22 +223,22 @@ void Shapes::handleShapeSelection(const sf::Vector2f& mousePos)
     case ShapeType::CustomEllipse:
         {
             // Get the center (startPos) and radii of the ellipse
-            sf::Vector2f center = startPos;
+            const sf::Vector2f center = startPos;
 
             // Calculate radii from the points
             float rx = 0.0f, ry = 0.0f;
             for (size_t i = 0; i < CustomShape.getPointCount(); ++i)
             {
-                sf::Vector2f point = CustomShape.getPoint(i);
+                const sf::Vector2f point = CustomShape.getPoint(i);
                 rx = std::max(rx, std::abs(point.x - center.x));
                 ry = std::max(ry, std::abs(point.y - center.y));
             }
 
             // Check if point is inside ellipse using the equation (x-h)²/a² + (y-k)²/b² ≤ 1
             // where (h,k) is the center, a is rx, and b is ry
-            float normalizedX = (mousePos.x - center.x) / rx;
-            float normalizedY = (mousePos.y - center.y) / ry;
-            float result = (normalizedX * normalizedX) + (normalizedY * normalizedY);
+            const float normalizedX = (mousePos.x - center.x) / rx;
+            const float normalizedY = (mousePos.y - center.y) / ry;
+            const float result = (normalizedX * normalizedX) + (normalizedY * normalizedY);
 
             // Add some tolerance for easier selection (1.1 instead of 1.0)
             if (result <= 1.1f)
@@ -297,22 +276,22 @@ bool Shapes::isShapeClicked(const sf::Vector2f& mousePos, const sf::FloatRect& b
     if (currentShape == ShapeType::CustomCircle)
     {
         // For circle, check if point is within radius
-        sf::Vector2f center = getShapeCenter();
-        float radius = (bounds.size.x / 2.0f); // Assuming circle is not scaled
-        float dx = mousePos.x - center.x;
-        float dy = mousePos.y - center.y;
+        const sf::Vector2f center = getShapeCenter();
+        const float radius = (bounds.size.x / 2.0f); // Assuming circle is not scaled
+        const float dx = mousePos.x - center.x;
+        const float dy = mousePos.y - center.y;
         return (dx * dx + dy * dy) <= (radius * radius);
     }
     else if (currentShape == ShapeType::CustomEllipse)
     {
         // For ellipse, check using the ellipse equation
         sf::Vector2f center = getShapeCenter();
-        float rx = bounds.size.x / 2.0f; // Semi-major axis
-        float ry = bounds.size.y / 2.0f; // Semi-minor axis
+        const float rx = bounds.size.x / 2.0f; // Semi-major axis
+        const float ry = bounds.size.y / 2.0f; // Semi-minor axis
 
         // Using ellipse equation: (x-h)²/a² + (y-k)²/b² ≤ 1
-        float normalizedX = (mousePos.x - center.x) / rx;
-        float normalizedY = (mousePos.y - center.y) / ry;
+        const float normalizedX = (mousePos.x - center.x) / rx;
+        const float normalizedY = (mousePos.y - center.y) / ry;
         return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1.1f; // 1.1f for better selection
     }
     return bounds.contains(mousePos);
@@ -342,7 +321,7 @@ void Shapes::handleDragging(const sf::Vector2f& mousePos)
     if (!isSelected || !isDragging) return;
 
     // Calculate new position
-    sf::Vector2f newPos = mousePos - dragOffset;
+    const sf::Vector2f newPos = mousePos - dragOffset;
 
     // Snap the new position to grid points
     // newPos.x = std::floor(newPos.x);
@@ -410,6 +389,13 @@ sf::Vector2f Shapes::getShapePosition()
 }
 
 
+// Fill the shape with a color
+void Shapes::fillColorInShape(const sf::Color& color)
+{
+    CustomShape.setFillColor(color);
+}
+
+
 // Remove the shape from the view
 void Shapes::clearShape()
 
@@ -423,14 +409,4 @@ void Shapes::clearShape()
     Renderer::hasShape = false;
     coordinatesText.setString("");
     currentShape = ShapeType::None; // Reset shape type
-
-    // // Properly reinitialize CustomShape
-    // CustomShape = sf::ConvexShape(4); // Create new shape with 4 points
-    // CustomShape.setPoint(0, sf::Vector2f(0, 0));
-    // CustomShape.setPoint(1, sf::Vector2f(0.1f, 0.1f)); // Use 1.0f instead of 0.1f
-    // CustomShape.setPoint(2, sf::Vector2f(0.1f, 0.1f));
-    // CustomShape.setPoint(3, sf::Vector2f(0, 0.1f));
-    // CustomShape.setFillColor(sf::Color::Transparent);
-    // CustomShape.setOutlineColor(sf::Color::Black);
-    // CustomShape.setOutlineThickness(0.1f);
 }
