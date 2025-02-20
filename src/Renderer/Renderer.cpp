@@ -94,7 +94,7 @@ void Renderer::handleMouseEvent(const sf::Event& event, sf::RenderWindow& window
             // };
             currentPos = mousePos;
             Shapes::currentPos = currentPos;
-            Shapes::updateShape();
+            Shapes::updateShape(window);
         }
     }
     else if (event.getIf<sf::Event::MouseButtonReleased>())
@@ -156,12 +156,12 @@ void Renderer::initializeShape(sf::RenderWindow& window)
         {
             Shapes::CustomShape.setPointCount(Shapes::CIRCLE_POINTS);
             // Initially set a small circle
-            float radius = 1.0f;
+            const float radius = 1.0f;
             for (int i = 0; i < Shapes::CIRCLE_POINTS; ++i)
             {
-                float angle = (i * 2 * M_PI) / Shapes::CIRCLE_POINTS;
-                float x = startPos.x + radius * cos(angle);
-                float y = startPos.y + radius * sin(angle);
+                const float angle = static_cast<float>(i * 2 * M_PI) / Shapes::CIRCLE_POINTS;
+                const float x = (startPos.x) + radius * cos(static_cast<double>(angle));
+                const float y = (startPos.y) + radius * sin(static_cast<double>(angle));
                 Shapes::CustomShape.setPoint(i, sf::Vector2f(x, y));
             }
             Shapes::CustomShape.setFillColor(sf::Color::Transparent);
@@ -170,19 +170,30 @@ void Renderer::initializeShape(sf::RenderWindow& window)
             window.draw(Shapes::CustomShape);
             break;
         }
+    case ShapeType::CustomEllipse:
+        {
+            Shapes::CustomShape.setPointCount(Shapes::CIRCLE_POINTS);
+            // Initially set a small ellipse
+            const float rx = 1.0f;  // radius in x direction
+            const float ry = 0.5f;  // radius in y direction (make it half to see the ellipse effect)
+
+            for (int i = 0; i < Shapes::CIRCLE_POINTS; ++i)
+            {
+                const float angle = static_cast<float>(i * 2 * M_PI) / Shapes::CIRCLE_POINTS;
+                const float x = startPos.x + rx * cos(static_cast<double>(angle));
+                const float y = startPos.y + ry * sin(static_cast<double>(angle));
+                Shapes::CustomShape.setPoint(i, sf::Vector2f(x, y));
+            }
+
+            Shapes::CustomShape.setFillColor(sf::Color::Transparent);
+            Shapes::CustomShape.setOutlineColor(sf::Color::Black);
+            Shapes::CustomShape.setOutlineThickness(0.1f);
+            window.draw(Shapes::CustomShape);
+            break;
+        }
     case ShapeType::CustomLine:
         {
-            Shapes::CustomShape.setPointCount(4);
-            sf::Vector2f thickness(0.05f, 0.05f); // Initial thickness vector
-
-            // Set initial points for a small line segment
-            Shapes::CustomShape.setPoint(0, startPos + sf::Vector2f(-thickness.x, thickness.y));
-            Shapes::CustomShape.setPoint(1, startPos + sf::Vector2f(thickness.x, thickness.y));
-            Shapes::CustomShape.setPoint(2, startPos + sf::Vector2f(thickness.x, -thickness.y));
-            Shapes::CustomShape.setPoint(3, startPos + sf::Vector2f(-thickness.x, -thickness.y));
-
-            Shapes::CustomShape.setFillColor(sf::Color::Black);
-            window.draw(Shapes::CustomShape);
+            Shapes::drawLineBresenham(window, startPos.x, startPos.y, startPos.x + 1, startPos.y, sf::Color::Black);
             break;
         }
     default:
@@ -197,13 +208,13 @@ void Renderer::finishDrawing(sf::RenderWindow& window)
     case ShapeType::CustomRectangle:
     case ShapeType::CustomTriangle:
     case ShapeType::CustomCircle:
+    case ShapeType::CustomEllipse:
         Shapes::CustomShape.setFillColor(sf::Color::Transparent);
         window.draw(Shapes::CustomShape);
         break;
     case ShapeType::CustomLine:
-        Shapes::CustomShape.setFillColor(sf::Color::Black);
+        Shapes::drawLineBresenham(window, startPos.x, startPos.y, currentPos.x, currentPos.y, sf::Color::Black);
         std::cout << "Line finalized " << std::endl;
-        window.draw(Shapes::CustomShape);
         break;
     default:
         break;
@@ -250,6 +261,24 @@ void Renderer::displayCoordinates(sf::RenderWindow& window)
             oss << "Circle Properties:\n";
             oss << "Center: (" << center.x << ", " << center.y << ")\n";
             oss << "Radius: " << radius;
+            break;
+        }
+    case ShapeType::CustomEllipse:
+        {
+            sf::Vector2f center = Shapes::getShapeCenter();
+            // Calculate semi-major and semi-minor axes
+            float rx = 0.0f, ry = 0.0f;
+            for (size_t i = 0; i < Shapes::CustomShape.getPointCount(); ++i)
+            {
+                sf::Vector2f point = Shapes::CustomShape.getPoint(i);
+                rx = std::max(rx, std::abs(point.x - center.x));
+                ry = std::max(ry, std::abs(point.y - center.y));
+            }
+
+            oss << "Ellipse Properties:\n";
+            oss << "Center: (" << center.x << ", " << center.y << ")\n";
+            oss << "Semi-major axis: " << std::max(rx, ry) << "\n";
+            oss << "Semi-minor axis: " << std::min(rx, ry);
             break;
         }
     default:

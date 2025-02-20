@@ -13,7 +13,7 @@ sf::Vector2f Shapes::startPos;
 sf::Vector2f Shapes::currentPos;
 sf::Vector2f Shapes::dragOffset;
 sf::Text Shapes::coordinatesText(Core::font);
-
+sf::VertexArray Shapes::linePoint(sf::PrimitiveType::Points);
 
 // Custom shape
 sf::ConvexShape Shapes::CustomShape;
@@ -25,8 +25,42 @@ void Shapes::setCurrentShape(const ShapeType shape)
     isDrawing = false;
 }
 
+void Shapes::drawLineBresenham(sf::RenderWindow& window, int x1, int y1, const int x2, const int y2,
+                               const sf::Color color)
+{
+    sf::VertexArray points(sf::PrimitiveType::Points);
+
+    int dx = abs(x2 - x1);
+    int dy = abs(y2 - y1);
+    const int sx = (x1 < x2) ? 1 : -1;
+    const int sy = (y1 < y2) ? 1 : -1;
+    int err = dx - dy;
+
+    while (true)
+    {
+        // Using aggregate initialization for vertex
+        points.append({{static_cast<float>(x1), static_cast<float>(y1)}, color});
+
+        if (x1 == x2 && y1 == y2) break;
+        std::cout << "Line being drawn at " << x1 << ", " << y1 << std::endl;
+        int e2 = 2 * err;
+        if (e2 > -dy)
+        {
+            err -= dy;
+            x1 += sx;
+        }
+        if (e2 < dx)
+        {
+            err += dx;
+            y1 += sy;
+        }
+    }
+
+    window.draw(points);
+}
+
 // Update the shape according to the mouse position if the shape is clicked and hold and dragged
-void Shapes::updateShape()
+void Shapes::updateShape(sf::RenderWindow& window)
 {
     switch (currentShape)
     {
@@ -50,7 +84,6 @@ void Shapes::updateShape()
         }
     case ShapeType::CustomTriangle:
         {
-            sf::Vector2f mouseOffset = currentPos - startPos;
             if (currentPos == startPos)
             {
                 std::cout << "Error cause currentPos == startPos\n";
@@ -65,7 +98,20 @@ void Shapes::updateShape()
             float dy = point2.y - point1.y;
             float length = std::sqrt(dx * dx + dy * dy);
 
-            if (length < 0.1f) length = 0.1f;
+            // Set a minimum length to prevent division by zero
+            const float MIN_LENGTH = 1.0f;
+            if (length < MIN_LENGTH)
+            {
+                // If triangle is too small, create a minimum size triangle
+                point2 = startPos + sf::Vector2f(MIN_LENGTH, 0);
+                sf::Vector2f perpendicular(0, -MIN_LENGTH);
+                sf::Vector2f point3 = startPos + perpendicular;
+
+                CustomShape.setPoint(0, point1);
+                CustomShape.setPoint(1, point2);
+                CustomShape.setPoint(2, point3);
+                break;
+            }
 
             // Calculate the third point using perpendicular vector
             sf::Vector2f perpendicular(-dy, dx); // Rotate 90 degrees
@@ -102,6 +148,31 @@ void Shapes::updateShape()
             }
             break;
         }
+    case ShapeType::CustomEllipse:
+        {
+            if (currentPos == startPos)
+            {
+                std::cout << "Error cause currentPos == startPos\n";
+                return;
+            }
+            // Calculate radii based on distance from start point to current mouse position
+            float rx = std::abs(currentPos.x - startPos.x);
+            float ry = std::abs(currentPos.y - startPos.y);
+
+            // Ensure minimum radii
+            if (rx < 1.0f) rx = 1.0f;
+            if (ry < 1.0f) ry = 1.0f;
+
+            // Update all points to form ellipse
+            for (int i = 0; i < CIRCLE_POINTS; ++i)
+            {
+                float angle = (i * 2 * M_PI) / CIRCLE_POINTS;
+                float x = startPos.x + rx * cos(angle);
+                float y = startPos.y + ry * sin(angle);
+                CustomShape.setPoint(i, sf::Vector2f(x, y));
+            }
+            break;
+        }
     case ShapeType::CustomLine:
         {
             if (currentPos == startPos)
@@ -109,31 +180,12 @@ void Shapes::updateShape()
                 std::cout << "Error cause currentPos == startPos\n";
                 return;
             }
-            // Update end point
-            sf::Vector2f start = CustomShape.getPoint(0);
-            sf::Vector2f end = currentPos;
 
-            // Calculate line direction vector
-            sf::Vector2f direction = end - start;
-            float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-
-            // Normalize direction vector
-            if (length > 0)
-            {
-                direction.x /= length;
-                direction.y /= length;
-            }
-
-            // Calculate perpendicular vector for thickness
-            sf::Vector2f perpendicular(-direction.y, direction.x);
-            float thickness = 0.05f; // Adjust this value to change line thickness
-
-            // Calculate the four corners of the thick line
-            CustomShape.setPointCount(4);
-            CustomShape.setPoint(0, start);
-            CustomShape.setPoint(1, end + perpendicular * thickness);
-            CustomShape.setPoint(2, end - perpendicular * thickness);
-            CustomShape.setPoint(3, start - perpendicular * thickness);
+            // Use coordinates directly since view handles scaling
+            drawLineBresenham(window,
+                              static_cast<int>(startPos.x), static_cast<int>(startPos.y),
+                              static_cast<int>(currentPos.x), static_cast<int>(currentPos.y),
+                              sf::Color::Black);
             break;
         }
     default:
@@ -146,18 +198,19 @@ void Shapes::updateShape()
 void Shapes::drawShape(sf::RenderWindow& window)
 {
     window.setView(Core::getGraphView());
-    window.draw(CustomShape);
-    // switch (currentShape)
-    // {
-    // case ShapeType::CustomRectangle:
-    //     window.draw(CustomShape);
+    switch (currentShape)
+    {
+    case ShapeType::CustomRectangle:
+    case ShapeType::CustomTriangle:
+    case ShapeType::CustomCircle:
+    case ShapeType::CustomEllipse:
+        window.draw(CustomShape);
+        break;
+    // case ShapeType::CustomLine:
     //     break;
-    // case ShapeType::CustomTriangle:
-    //     window.draw(CustomShape);
-    //     break;
-    // default:
-    //     break;
-    // }
+    default:
+        break;
+    }
 }
 
 // Handle the selection of the shape
@@ -186,8 +239,41 @@ void Shapes::handleShapeSelection(const sf::Vector2f& mousePos)
             }
 
             bounds = sf::FloatRect({minX, minY}, {maxX - minX, maxY - minY});
+            break;
         }
-        break;
+    case ShapeType::CustomEllipse:
+        {
+            // Get the center (startPos) and radii of the ellipse
+            sf::Vector2f center = startPos;
+
+            // Calculate radii from the points
+            float rx = 0.0f, ry = 0.0f;
+            for (size_t i = 0; i < CustomShape.getPointCount(); ++i)
+            {
+                sf::Vector2f point = CustomShape.getPoint(i);
+                rx = std::max(rx, std::abs(point.x - center.x));
+                ry = std::max(ry, std::abs(point.y - center.y));
+            }
+
+            // Check if point is inside ellipse using the equation (x-h)²/a² + (y-k)²/b² ≤ 1
+            // where (h,k) is the center, a is rx, and b is ry
+            float normalizedX = (mousePos.x - center.x) / rx;
+            float normalizedY = (mousePos.y - center.y) / ry;
+            float result = (normalizedX * normalizedX) + (normalizedY * normalizedY);
+
+            // Add some tolerance for easier selection (1.1 instead of 1.0)
+            if (result <= 1.1f)
+            {
+                isSelected = true;
+                setShapeOutlineColor(sf::Color::Green);
+            }
+            else
+            {
+                isSelected = false;
+                setShapeOutlineColor(sf::Color::Black);
+            }
+            return;
+        }
     default:
         return;
     }
@@ -217,6 +303,18 @@ bool Shapes::isShapeClicked(const sf::Vector2f& mousePos, const sf::FloatRect& b
         float dy = mousePos.y - center.y;
         return (dx * dx + dy * dy) <= (radius * radius);
     }
+    else if (currentShape == ShapeType::CustomEllipse)
+    {
+        // For ellipse, check using the ellipse equation
+        sf::Vector2f center = getShapeCenter();
+        float rx = bounds.size.x / 2.0f; // Semi-major axis
+        float ry = bounds.size.y / 2.0f; // Semi-minor axis
+
+        // Using ellipse equation: (x-h)²/a² + (y-k)²/b² ≤ 1
+        float normalizedX = (mousePos.x - center.x) / rx;
+        float normalizedY = (mousePos.y - center.y) / ry;
+        return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1.1f; // 1.1f for better selection
+    }
     return bounds.contains(mousePos);
 }
 
@@ -228,6 +326,7 @@ sf::Vector2f Shapes::getShapeCenter()
     case ShapeType::CustomRectangle:
     case ShapeType::CustomTriangle:
     case ShapeType::CustomCircle:
+    case ShapeType::CustomEllipse:
         bounds = CustomShape.getGlobalBounds();
         break;
     default:
@@ -261,6 +360,7 @@ void Shapes::setShapePosition(const sf::Vector2f& position)
     case ShapeType::CustomRectangle:
     case ShapeType::CustomTriangle:
     case ShapeType::CustomLine:
+    case ShapeType::CustomEllipse:
         {
             sf::Vector2f currentTopLeft = CustomShape.getPoint(0);
             sf::Vector2f offset = position - currentTopLeft;
@@ -302,6 +402,7 @@ sf::Vector2f Shapes::getShapePosition()
     case ShapeType::CustomRectangle:
     case ShapeType::CustomTriangle:
     case ShapeType::CustomCircle:
+    case ShapeType::CustomEllipse:
         return CustomShape.getPoint(0);
     default:
         return {0, 0};

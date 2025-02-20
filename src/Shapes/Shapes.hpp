@@ -18,6 +18,7 @@ public:
 
     // Custom shape
     static sf::ConvexShape CustomShape;
+    static sf::VertexArray linePoint;
 
     // Number of points for a cirlc
     static constexpr int CIRCLE_POINTS = 32;  // More points = smoother circle
@@ -39,7 +40,7 @@ public:
     static void handleShapeSelection(const sf::Vector2f& mousePos);
     static void setCurrentShape(const ShapeType shape);
     static void drawShape(sf::RenderWindow& window);
-    static void updateShape();
+    static void updateShape(sf::RenderWindow& window);
     static bool isShapeClicked(const sf::Vector2f& mousePos, const sf::FloatRect& bounds);
     static sf::Vector2f getShapeCenter();
     static void handleDragging(const sf::Vector2f& mousePos);
@@ -48,6 +49,9 @@ public:
 
     static sf::Vector2f currentPos; // Current position of the mouse
     static sf::Vector2f startPos; // Position of the mouse when dragging started
+
+    // Add Bresenham line drawing function
+    static void drawLineBresenham(sf::RenderWindow& window, int x1, int y1, int x2, int y2, sf::Color color = sf::Color::Black);
 
     // Remove the current shape
     static void clearShape();

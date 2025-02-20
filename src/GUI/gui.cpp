@@ -570,6 +570,7 @@ void GUI::initGui(sf::RenderWindow& window)
                     break;
                 case 3:
                     Renderer::hasShape = false;
+                    Renderer::setCurrentShape(Renderer::ShapeType::CustomEllipse);
                     break;
                 case 4:
                     std::cout << "Line option clicked!" << std::endl;
