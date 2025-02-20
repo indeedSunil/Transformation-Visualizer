@@ -1,12 +1,11 @@
 #include "transformations.hpp"
-#include <cmath>
 #include <iostream>
 
 // Scale the shape by the given scale factor
 void Transformation::scale(sf::ConvexShape& shape, const sf::Vector2f scaleFactor)
 {
-    const int pointCount = shape.getPointCount();
-    std::cout << "Shape received" << std::endl;
+    const auto pointCount = shape.getPointCount();
+
     // Get the center of the shape
     sf::Vector2f center(0, 0);
     for (int i = 0; i < pointCount; i++) {
@@ -49,7 +48,7 @@ void Transformation::scale(sf::ConvexShape& shape, const sf::Vector2f scaleFacto
 // Translate the shape by the given translation factor
 void Transformation::translate(sf::ConvexShape& shape, sf::Vector2f translationFactor)
 {
-    const int pointCount = shape.getPointCount();
+    const auto pointCount = shape.getPointCount();
     TransformationAlgorithm transform;
 
     // Set translation transformation
@@ -68,8 +67,7 @@ void Transformation::translate(sf::ConvexShape& shape, sf::Vector2f translationF
 // Rotate the shape by the given angle around the pivot point
 void Transformation::rotate(sf::ConvexShape& shape, const float angle, const sf::Vector2f pivot)
 {
-    const int pointCount = shape.getPointCount();
-    TransformationAlgorithm transform;
+    const auto pointCount = shape.getPointCount();
 
     // Create transformation matrices
     TransformationAlgorithm toPivotTransform;
@@ -83,7 +81,7 @@ void Transformation::rotate(sf::ConvexShape& shape, const float angle, const sf:
 
     // Combine transformations in correct order
     // Final = Translation_back * Rotation * Translation_to_pivot
-    Eigen::Matrix3f finalTransform = backTransform.getTransformationMatrix() *
+    const Eigen::Matrix3f finalTransform = backTransform.getTransformationMatrix() *
                                    rotateTransform.getTransformationMatrix() *
                                    toPivotTransform.getTransformationMatrix();
 
@@ -105,7 +103,7 @@ void Transformation::rotate(sf::ConvexShape& shape, const float angle, const sf:
 // Reflect the shape about the x-axis or y-axis
 void Transformation::reflect(sf::ConvexShape& shape, float slope, float yIntercept)
 {
-    const int pointCount = shape.getPointCount();
+    const auto pointCount = shape.getPointCount();
     TransformationAlgorithm transform;
 
     // Debug: Print original points and reflection parameters
@@ -160,7 +158,7 @@ void Transformation::reflect(sf::ConvexShape& shape, float slope, float yInterce
 // Shear the shape by the given shear factor
 void Transformation::shear(sf::ConvexShape& shape, sf::Vector2f shearFactor)
 {
-    const int pointCount = shape.getPointCount();
+    const auto pointCount = shape.getPointCount();
 
     // Get the center of the shape
     sf::Vector2f center(0, 0);
@@ -182,7 +180,7 @@ void Transformation::shear(sf::ConvexShape& shape, sf::Vector2f shearFactor)
 
     // Combine transformations in correct order
     // Final = Translation_back * Shear * Translation_to_center
-    Eigen::Matrix3f finalTransform = backTransform.getTransformationMatrix() *
+    const Eigen::Matrix3f finalTransform = backTransform.getTransformationMatrix() *
                                    shearTransform.getTransformationMatrix() *
                                    toCenterTransform.getTransformationMatrix();
 
@@ -195,7 +193,7 @@ void Transformation::shear(sf::ConvexShape& shape, sf::Vector2f shearFactor)
     for (int i = 0; i < pointCount; i++)
     {
         sf::Vector2f originalPoint = shape.getPoint(i);
-        sf::Vector2f transformedPoint = finalTransformAlgo.transformPoint(originalPoint);
+        const sf::Vector2f transformedPoint = finalTransformAlgo.transformPoint(originalPoint);
         shape.setPoint(i, transformedPoint);
     }
 }

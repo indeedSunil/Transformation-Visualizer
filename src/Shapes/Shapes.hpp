@@ -46,6 +46,7 @@ public:
     static void handleDragging(const sf::Vector2f& mousePos);
     static void setShapePosition(const sf::Vector2f& position);
     static sf::Vector2f getShapePosition();
+    static void fillColourInShape(sf::RenderWindow& window, sf::Color color);
 
     static sf::Vector2f currentPos; // Current position of the mouse
     static sf::Vector2f startPos; // Position of the mouse when dragging started
@@ -55,7 +56,8 @@ public:
                                   sf::Color color = sf::Color::Black);
 
     // Fill the shape with a color
-    static void fillColorInShape(const sf::Color& color);
+    static void fillColorInShape(sf::RenderWindow& window, const sf::Color& color);
+    // static void fillColourInShape(const sf::Color& color);
 
     // Remove the current shape
     static void clearShape();
@@ -63,6 +65,7 @@ public:
 
 private:
     static ShapeType currentShape; // Type of current shape
+    static sf::VertexArray FillPoints;
 
     static void setShapeOutlineColor(const sf::Color& color)
     {

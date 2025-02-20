@@ -88,15 +88,15 @@ void GUI::initGui(sf::RenderWindow& window)
                     {
                     case 0:
                         std::cout << "Red color selected" << std::endl;
-                        Shapes::fillColorInShape(sf::Color::Red);
+                        Shapes::fillColorInShape(window, sf::Color::Red);
                         break;
                     case 1:
                         std::cout << "Green color selected" << std::endl;
-                        Shapes::fillColorInShape(sf::Color::Green);
+                        Shapes::fillColorInShape(window, sf::Color::Green);
                         break;
                     case 2:
                         std::cout << "Blue color selected" << std::endl;
-                        Shapes::fillColorInShape(sf::Color::Blue);
+                        Shapes::fillColorInShape(window, sf::Color::Blue);
                         break;
                     default:
                         break;

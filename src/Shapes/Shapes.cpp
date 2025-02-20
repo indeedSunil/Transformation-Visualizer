@@ -18,6 +18,8 @@ sf::VertexArray Shapes::LinePoints(sf::PrimitiveType::LineStrip);
 // Custom shape
 sf::ConvexShape Shapes::CustomShape;
 
+sf::VertexArray Shapes::FillPoints(sf::PrimitiveType::Lines);
+
 // Initialize the shape
 void Shapes::setCurrentShape(const ShapeType shape)
 {
@@ -390,11 +392,11 @@ sf::Vector2f Shapes::getShapePosition()
 
 
 // Fill the shape with a color
-void Shapes::fillColorInShape(const sf::Color& color)
+void Shapes::fillColorInShape(sf::RenderWindow& window, const sf::Color& color)
 {
+    if (currentShape == ShapeType::CustomLine || currentShape == ShapeType::None) return;
     CustomShape.setFillColor(color);
 }
-
 
 // Remove the shape from the view
 void Shapes::clearShape()
@@ -409,4 +411,35 @@ void Shapes::clearShape()
     Renderer::hasShape = false;
     coordinatesText.setString("");
     currentShape = ShapeType::None; // Reset shape type
+}
+
+
+// Fill the shape with a color
+void Shapes::fillColourInShape(sf::RenderWindow& window, const sf::Color color)
+{
+    if (currentShape == ShapeType::CustomLine || currentShape == ShapeType::None) return;
+
+    // Get the bounds of the shape
+    sf::FloatRect bounds = CustomShape.getLocalBounds();
+
+    // Create a vertex array for filling
+    sf::VertexArray fill(sf::PrimitiveType::Points);
+
+    // Simple horizontal scan lines
+    for (float y = bounds.position.y; y < bounds.position.y + bounds.size.y; y += 1.0f)
+    {
+        for (float x = bounds.position.x; x < bounds.position.x + bounds.size.x; x += 1.0f)
+        {
+            // Create a point
+            sf::Vertex point;
+            point.position = sf::Vector2f(x, y);
+            point.color = color;
+
+            // Add the point to fill
+            fill.append(point);
+        }
+    }
+
+    // Draw the fill
+    window.draw(fill);
 }
