@@ -178,8 +178,8 @@ void Renderer::initializeShape(sf::RenderWindow& window)
             for (int i = 0; i < Shapes::CIRCLE_POINTS; ++i)
             {
                 const float angle = static_cast<float>(i * 2 * M_PI) / Shapes::CIRCLE_POINTS;
-                const float x = startPos.x + rx * cos(static_cast<double>(angle));
-                const float y = startPos.y + ry * sin(static_cast<double>(angle));
+                const auto x = static_cast<float>(startPos.x + rx * cos(static_cast<double>(angle)));
+                const auto y = static_cast<float>(startPos.y + ry * sin(static_cast<double>(angle)));
                 Shapes::CustomShape.setPoint(i, sf::Vector2f(x, y));
             }
 
@@ -275,6 +275,17 @@ void Renderer::displayCoordinates(sf::RenderWindow& window)
             oss << "Center: (" << center.x << ", " << center.y << ")\n";
             oss << "Semi-major axis: " << std::max(rx, ry) << "\n";
             oss << "Semi-minor axis: " << std::min(rx, ry);
+            break;
+        }
+    case ShapeType::CustomLine:
+        {
+            oss << "Line Properties:\n";
+            if (Shapes::LinePoints.getVertexCount() >= 2) {
+                const sf::Vector2f startPoint = Shapes::LinePoints[0].position;
+                const sf::Vector2f endPoint = Shapes::LinePoints[1].position;
+                oss << "Start Point: (" << startPoint.x << ", " << startPoint.y << ")\n";
+                oss << "End Point: (" << endPoint.x << ", " << endPoint.y << ")";
+            }
             break;
         }
     default:
