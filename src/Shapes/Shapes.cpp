@@ -27,7 +27,7 @@ void Shapes::setCurrentShape(const ShapeType shape)
     isDrawing = false;
 }
 
-void Shapes::drawLineBresenham(sf::RenderWindow& window, const int x1, const int y1, const int x2, const int y2,
+void Shapes::drawLine(sf::RenderWindow& window, const int x1, const int y1, const int x2, const int y2,
                                const sf::Color color)
 {
     LinePoints.clear();
@@ -257,7 +257,7 @@ void Shapes::updateShape(sf::RenderWindow& window)
                 return;
             }
 
-            drawLineBresenham(window,
+            drawLine(window,
                               static_cast<int>(startPos.x), static_cast<int>(startPos.y),
                               static_cast<int>(currentPos.x), static_cast<int>(currentPos.y),
                               sf::Color::Black);

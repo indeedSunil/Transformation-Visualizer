@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "Shapes/Shapes.hpp"
+#include <cmath>
 #include <iomanip>
 #include "UI/UI.hpp"
 #include <iostream>
@@ -139,7 +140,7 @@ void Renderer::initializeShape(sf::RenderWindow& window)
         }
     case ShapeType::CustomTriangle:
         {
-            Shapes::CustomShape.setPointCount(3); // Triangle has 3 points
+            Shapes::CustomShape.setPointCount(3);
             Shapes::CustomShape.setPoint(0, startPos); // First point at click position
             // Initialize with a small equilateral triangle
             Shapes::CustomShape.setPoint(1, startPos + sf::Vector2f(2.f, 0.f)); // Second point to the right
@@ -158,8 +159,8 @@ void Renderer::initializeShape(sf::RenderWindow& window)
             for (int i = 0; i < Shapes::CIRCLE_POINTS; ++i)
             {
                 const float angle = static_cast<float>(i * 2 * M_PI) / Shapes::CIRCLE_POINTS;
-                const float x = (startPos.x) + radius * cos(static_cast<double>(angle));
-                const float y = (startPos.y) + radius * sin(static_cast<double>(angle));
+                const auto x = startPos.x + radius * std::cos(angle);
+                const auto y = startPos.y + radius * std::sin(angle);
                 Shapes::CustomShape.setPoint(i, sf::Vector2f(x, y));
             }
             Shapes::CustomShape.setFillColor(sf::Color::Transparent);
@@ -178,8 +179,8 @@ void Renderer::initializeShape(sf::RenderWindow& window)
             for (int i = 0; i < Shapes::CIRCLE_POINTS; ++i)
             {
                 const float angle = static_cast<float>(i * 2 * M_PI) / Shapes::CIRCLE_POINTS;
-                const auto x = static_cast<float>(startPos.x + rx * cos(static_cast<double>(angle)));
-                const auto y = static_cast<float>(startPos.y + ry * sin(static_cast<double>(angle)));
+                const auto x = startPos.x + rx * std::cos(angle);
+                const auto y = startPos.y + ry * std::sin(angle);
                 Shapes::CustomShape.setPoint(i, sf::Vector2f(x, y));
             }
 
@@ -191,7 +192,7 @@ void Renderer::initializeShape(sf::RenderWindow& window)
         }
     case ShapeType::CustomLine:
         {
-            Shapes::drawLineBresenham(window, startPos.x, startPos.y, startPos.x + 1, startPos.y, sf::Color::Black);
+            Shapes::drawLine(window, startPos.x, startPos.y, startPos.x + 1, startPos.y, sf::Color::Black);
             break;
         }
     default:
@@ -211,7 +212,7 @@ void Renderer::finishDrawing(sf::RenderWindow& window)
         window.draw(Shapes::CustomShape);
         break;
     case ShapeType::CustomLine:
-        Shapes::drawLineBresenham(window, startPos.x, startPos.y, currentPos.x, currentPos.y, sf::Color::Black);
+        Shapes::drawLine(window, startPos.x, startPos.y, currentPos.x, currentPos.y, sf::Color::Black);
         break;
     default:
         break;

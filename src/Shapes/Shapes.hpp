@@ -52,7 +52,7 @@ public:
     static sf::Vector2f startPos; // Position of the mouse when dragging started
 
     // Add Bresenham line drawing function
-    static void drawLineBresenham(sf::RenderWindow& window, int x1, int y1, int x2, int y2,
+    static void drawLine(sf::RenderWindow& window, int x1, int y1, int x2, int y2,
                                   sf::Color color = sf::Color::Black);
     static std::vector<sf::Vector2f> getMidPointCirclePoints(int centerX, int centerY, int radius);
 
